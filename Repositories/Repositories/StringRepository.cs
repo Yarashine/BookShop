@@ -5,39 +5,39 @@ using System.Linq.Expressions;
 
 namespace Repositories.Repositories;
 
-public class StringRepository : IStringRepository
+public class StringRepository<T> : IStringRepository<T> where T : StringEntity
 {
     protected readonly ShopContext context;
-    protected readonly DbSet<StringEntity> entities;
+    protected readonly DbSet<T> entities;
     public StringRepository(ShopContext _context)
     {
         context = _context;
-        entities = _context.Set<StringEntity>();
+        entities = _context.Set<T>();
     }
-    public async Task AddAsync(StringEntity entity, CancellationToken cancellationToken)
+    public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
         await entities.AddAsync(entity);
     }
 
     public async Task DeleteAsync(string name, CancellationToken cancellationToken)
     {
-        StringEntity? entity = await FirstOrDefaultAsync(e => e.Name == name, cancellationToken);
+        T? entity = await FirstOrDefaultAsync(e => e.Name == name, cancellationToken);
         if (entity is not null)
         entities.Remove(entity);
     }
 
-    public async Task<StringEntity?> FirstOrDefaultAsync(Expression<Func<StringEntity, bool>> filter, CancellationToken cancellationToken)
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
     {
         return await entities.FirstOrDefaultAsync(filter, cancellationToken);
     }
 
-    public async Task<StringEntity?> GetByNameAsync(string name, CancellationToken cancellationToken = default,
-        params Expression<Func<StringEntity, object>>[]? includesProperties)
+    public async Task<T?> GetByNameAsync(string name, CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[]? includesProperties)
     {
-        IQueryable<StringEntity>? query = entities.AsQueryable();
+        IQueryable<T>? query = entities.AsQueryable();
         if (includesProperties is not null && includesProperties.Any())
         {
-            foreach (Expression<Func<StringEntity, object>>? included in includesProperties)
+            foreach (Expression<Func<T, object>>? included in includesProperties)
             {
                 query = query.Include(included);
             }
@@ -45,13 +45,13 @@ public class StringRepository : IStringRepository
         return await query.FirstOrDefaultAsync(e => e.Name == name, cancellationToken);
     }
 
-    public async Task<StringEntity?> GetByNameWithBooksAsync(string name, CancellationToken cancellationToken = default,
-        params Expression<Func<StringEntity, object>>[]? includesProperties)
+    public async Task<T?> GetByNameWithBooksAsync(string name, CancellationToken cancellationToken = default,
+        params Expression<Func<T, object>>[]? includesProperties)
     {
-        IQueryable<StringEntity>? query = entities.Include(s => s.Books).AsQueryable();
+        IQueryable<T>? query = entities.Include(s => s.Books).AsQueryable();
         if (includesProperties is not null && includesProperties.Any())
         {
-            foreach (Expression<Func<StringEntity, object>>? included in includesProperties)
+            foreach (Expression<Func<T, object>>? included in includesProperties)
             {
                 query = query.Include(included);
             }
@@ -59,18 +59,18 @@ public class StringRepository : IStringRepository
         return await query.FirstOrDefaultAsync(e => e.Name == name, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<StringEntity>> ListAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<T>> ListAllAsync(CancellationToken cancellationToken = default)
     {
         return await entities.ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<StringEntity>> ListAsync(Expression<Func<StringEntity, bool>>? filter,
-    CancellationToken cancellationToken = default, params Expression<Func<StringEntity, object>>[]? includesProperties)
+    public async Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>>? filter,
+    CancellationToken cancellationToken = default, params Expression<Func<T, object>>[]? includesProperties)
     {
-        IQueryable<StringEntity>? query = entities.AsQueryable();
+        IQueryable<T>? query = entities.AsQueryable();
         if (includesProperties is not null && includesProperties.Any())
         {
-            foreach (Expression<Func<StringEntity, object>>? included in includesProperties)
+            foreach (Expression<Func<T, object>>? included in includesProperties)
             {
                 query = query.Include(included);
             }

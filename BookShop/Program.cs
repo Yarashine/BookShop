@@ -2,6 +2,7 @@ using Servises.Interfaces;
 using Servises.Services;
 using Repositories;
 using Models.Entities;
+using Models.Exceptions;
 using Models.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -11,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Api.AuthorizationPolicy.IsBlocked;
 using Api.AuthorizationPolicy.IsBunned;
+using Stripe;
 
 namespace BookShop;
 public class Program
@@ -25,34 +27,28 @@ public class Program
             (options => options.UseNpgsql(connection, b => b.MigrationsAssembly("BookShop")));
 
         builder.Services.AddControllers();
-        var provader = builder.Services.BuildServiceProvider();
-
-
-        
 
         builder.Services.AddScoped<IAuthorizationHandler, IsBlockedHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, IsBunnedHandler>();
 
         builder.Services.AddScoped<Servises.Interfaces.IAuthorizationService, AuthorizationService>();
-        builder.Services.AddScoped<ITokenService, TokenService>();
+        builder.Services.AddScoped<ITokenService, Servises.Services.TokenService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddScoped<IBookService, BookService>();
         builder.Services.AddScoped<IGenreService, GenreService>();
         builder.Services.AddScoped<ITagService, TagService>();
         builder.Services.AddScoped<ICommentService, CommentService>();
         builder.Services.AddScoped<IAdministratorService, AdministratorService>();
         builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("IsNotBlocked", policy =>
+        builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+        builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("IsNotBlocked", policy =>
                 policy.Requirements.Add(new IsBlockedRequirement()));
-        });
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("IsNotBunned", policy =>
+        _ = builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("IsNotBunned", policy =>
                 policy.Requirements.Add(new IsBunnedRequirement()));
-        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(option =>
@@ -77,7 +73,7 @@ public class Program
                         Id = "Bearer"
                     }
                 },
-                new string[] {}
+                Array.Empty<string>()
                 }
         });
         });
@@ -96,10 +92,12 @@ public class Program
             {
                 ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
                 ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key" ] 
+                ?? throw new BadRequestException("key is null"))),
                 ClockSkew = TimeSpan.Zero
             };
         });
+
 
 
         var app = builder.Build();

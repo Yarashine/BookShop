@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.5.0" />
     <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="MimeKit" Version="4.5.0" />
+    <PackageReference Include="Stripe.net" Version="44.3.0" />
   </ItemGroup>
 
   <ItemGroup>

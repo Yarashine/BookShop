@@ -5,18 +5,14 @@ using System.Linq.Expressions;
 
 namespace Repositories.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(ShopContext _context) : IUserRepository
 {
-    protected readonly ShopContext context;
-    protected readonly DbSet<User> entities;
-    public UserRepository(ShopContext _context)
-    {
-        context = _context;
-        entities = _context.Set<User>();
-    }
+    protected readonly ShopContext context = _context;
+    protected readonly DbSet<User> entities = _context.Set<User>();
+
     public async Task AddAsync(User entity, CancellationToken cancellationToken)
     {
-        await entities.AddAsync(entity);
+        await entities.AddAsync(entity, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -29,6 +25,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> filter, CancellationToken cancellationToken)
     {
         return await entities.Include(u => u.BooksToSell).FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    public async Task<User?> GetByIdWithAiAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        IQueryable<User>? query = entities.Include(u => u.AuthorizationInfo).AsQueryable();
+        return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
     public async Task<User?> GetByIdWithStatusAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -74,7 +76,7 @@ public class UserRepository : IUserRepository
     CancellationToken cancellationToken = default, params Expression<Func<User, object>>[]? includesProperties)
     {
         IQueryable<User>? query = entities.Include(u => u.BooksToSell).AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<User, object>>? included in includesProperties)
             {
@@ -91,9 +93,9 @@ public class UserRepository : IUserRepository
         return await query.ToListAsync();
     }
 
-    public Task UpdateAsync(User entity, CancellationToken cancellationToken = default)
+    /*public Task UpdateAsync(User entity, CancellationToken cancellationToken = default)
     {
         context.Entry(entity).State = EntityState.Modified;
         return Task.CompletedTask;
-    }
+    }*/
 }

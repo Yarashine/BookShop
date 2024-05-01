@@ -7,10 +7,8 @@ using Servises.Interfaces;
 
 namespace Servises.Services;
 
-public class AdministratorService : BaseService, IAdministratorService
+public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOfWork), IAdministratorService
 {
-    public AdministratorService(IUnitOfWork _unitOfWork) : base(_unitOfWork) { }
-
     public async Task<bool> BlockBookAsync(BlockedStatusDto status)
     {
         Book? book = await unitOfWork.BookRepository.GetByIdAsync(status.BlockedEntityId);
@@ -55,8 +53,7 @@ public class AdministratorService : BaseService, IAdministratorService
             throw new NotFoundException(nameof(User));
         if (administrator is null)
             throw new NotFoundException(nameof(Administrator));
-        if (user.Status is null)
-            user.Status = status.Adapt<UserStatus>();
+        user.Status ??= status.Adapt<UserStatus>();
         user.Status.AdministratorId = status.AdministratorId;
         user.Status.Description = status.Description;
         user.Status.CountOfViolations++;
@@ -70,9 +67,7 @@ public class AdministratorService : BaseService, IAdministratorService
 
     public async Task<bool> UnBlockBookAsync(Guid id)
     {
-        Book? book = await unitOfWork.BookRepository.GetByIdAsync(id);
-        if (book is null)
-            throw new NotFoundException(nameof(Book));
+        Book? book = await unitOfWork.BookRepository.GetByIdAsync(id) ?? throw new NotFoundException(nameof(Book));
         book.State = StateType.IsExisted;
         await unitOfWork.SaveAllAsync();
         return true;
@@ -80,9 +75,7 @@ public class AdministratorService : BaseService, IAdministratorService
 
     public async Task<bool> UnBlockCommentAsync(Guid id)
     {
-        Comment? comment = await unitOfWork.CommentRepository.GetByIdAsync(id);
-        if (comment is null)
-            throw new NotFoundException(nameof(Comment));
+        Comment? comment = await unitOfWork.CommentRepository.GetByIdAsync(id) ?? throw new NotFoundException(nameof(Comment));
         comment.State = StateType.IsExisted;
         await unitOfWork.SaveAllAsync();
         return true;
@@ -90,9 +83,7 @@ public class AdministratorService : BaseService, IAdministratorService
 
     public async Task<bool> UnBlockUserAsync(Guid id)
     {
-        User? user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(id);
-        if (user is null)
-            throw new NotFoundException(nameof(User));
+        User? user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(id) ?? throw new NotFoundException(nameof(User));
         user.State = StateType.IsExisted;
         if(user.Status is not null)
         user.Status.StateType = StateType.IsExisted;

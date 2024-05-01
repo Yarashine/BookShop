@@ -8,8 +8,8 @@ public interface IUnitOfWork
     IBookRepository BookRepository { get; }
     IRepository<Comment> CommentRepository { get; }
     IRepository<Administrator> AdministratorRepository { get; }
-    IStringRepository TagRepository { get; }
-    IStringRepository GenreRepository { get; }
+    IStringRepository<Tag> TagRepository { get; }
+    IStringRepository<Genre> GenreRepository { get; }
     IUserAuthorizationRepository UserAuthorizationRepository { get; }
     IAdminAuthorizationRepository AdminAuthorizationRepository { get; }
     public Task SaveAllAsync();

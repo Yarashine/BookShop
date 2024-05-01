@@ -13,7 +13,7 @@ public class GenreService : BaseService, IGenreService
         StringEntity? genre = await unitOfWork.GenreRepository.GetByNameAsync(name);
         if (genre is null)
         {
-            await unitOfWork.GenreRepository.AddAsync(new StringEntity() { Name = name });
+            await unitOfWork.GenreRepository.AddAsync(new Genre() { Name = name });
             await unitOfWork.SaveAllAsync();
             return true;
         }

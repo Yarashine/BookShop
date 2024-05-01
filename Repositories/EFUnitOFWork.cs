@@ -12,8 +12,8 @@ public class EfUnitOfWork : IUnitOfWork
     private readonly Lazy<IBookRepository> bookRepository;
     private readonly Lazy<IRepository<Comment>> commentRepository;
     private readonly Lazy<IRepository<Administrator>> administratorRepository;
-    private readonly Lazy<IStringRepository> genreRepository;
-    private readonly Lazy<IStringRepository> tagRepository;
+    private readonly Lazy<IStringRepository<Genre>> genreRepository;
+    private readonly Lazy<IStringRepository<Tag>> tagRepository;
     private readonly Lazy<IUserAuthorizationRepository> userAuthorizationRepository;
     private readonly Lazy<IAdminAuthorizationRepository> adminAuthorizationRepository;
 
@@ -24,8 +24,8 @@ public class EfUnitOfWork : IUnitOfWork
         bookRepository = new Lazy<IBookRepository>(() => new BookRepository(context));
         commentRepository = new Lazy<IRepository<Comment>>(() => new EfRepository<Comment>(context));
         administratorRepository = new Lazy<IRepository<Administrator>>(() => new EfRepository<Administrator>(context));
-        genreRepository = new Lazy<IStringRepository>(() => new StringRepository(context));
-        tagRepository = new Lazy<IStringRepository>(() => new StringRepository(context));
+        genreRepository = new Lazy<IStringRepository<Genre>>(() => new StringRepository<Genre>(context));
+        tagRepository = new Lazy<IStringRepository<Tag>>(() => new StringRepository<Tag>(context));
         userAuthorizationRepository = new Lazy<IUserAuthorizationRepository>(() => new UserAuthorizationRepository(context));
         adminAuthorizationRepository = new Lazy<IAdminAuthorizationRepository>(() => new AdminAuthorizationRepository(context));
 
@@ -35,8 +35,8 @@ public class EfUnitOfWork : IUnitOfWork
     public IBookRepository BookRepository => bookRepository.Value;
     public IRepository<Comment> CommentRepository => commentRepository.Value;
     public IRepository<Administrator> AdministratorRepository => administratorRepository.Value;
-    public IStringRepository GenreRepository => genreRepository.Value;
-    public IStringRepository TagRepository => tagRepository.Value;
+    public IStringRepository<Genre> GenreRepository => genreRepository.Value;
+    public IStringRepository<Tag> TagRepository => tagRepository.Value;
     public IUserAuthorizationRepository UserAuthorizationRepository => userAuthorizationRepository.Value;
     public IAdminAuthorizationRepository AdminAuthorizationRepository => adminAuthorizationRepository.Value;
     public async Task CreateDataBaseAsync() => await context.Database.EnsureCreatedAsync();

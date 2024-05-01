@@ -5,6 +5,7 @@ namespace Models.Abstractions;
 
 public interface IUserRepository
 {
+    Task<User?> GetByIdWithAiAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithCommentsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithStatusAsync(Guid id, CancellationToken cancellationToken = default);

@@ -6,13 +6,10 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("/api")]
-public class BookController : Controller
+public class BookController(IBookService _bookService) : Controller
 {
-    private readonly IBookService bookService;
-    public BookController(IBookService _bookService)
-    {
-        bookService = _bookService;
-    }
+    private readonly IBookService bookService = _bookService;
+
     [HttpGet("{id}")]
     public async Task<ActionResult<BookDto>> GetById([FromRoute] Guid id)
     {
@@ -51,8 +48,8 @@ public class BookController : Controller
 
         return Ok();
     }
-    /*[HttpPut("update")]*/
-    /*public async Task<IActionResult> Update([FromForm] Guid bookId, [FromForm] BookDto bookDto)
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromForm] Guid bookId, [FromForm] BookDto bookDto)
     {
         bool result = await bookService.UpdateBookAsync(bookId, bookDto);
 
@@ -60,8 +57,8 @@ public class BookController : Controller
             return BadRequest();
 
         return Ok();
-    }*/
-    /*[HttpGet("download/{id}")]
+    }
+    [HttpGet("download/{id}")]
     public async Task<ActionResult<BookDto>> Download([FromRoute] Guid id)
     {
         var book = await bookService.DownloadBookAsync(id);
@@ -70,7 +67,17 @@ public class BookController : Controller
             return NotFound();
 
         return Ok(book);
-    }*/
+    }
+    [HttpPost("buy")]
+    public async Task<IActionResult> Buy([FromForm] Guid userId, Guid bookId)
+    {
+        bool result = await bookService.BuyBookAsync(userId, bookId);
+
+        if (!result)
+            return BadRequest();
+
+        return Ok();
+    }
     /*[HttpDelete("delete/{id}")]
     public async Task<ActionResult<BookDto>> Delete([FromRoute] Guid userId, Guid bookId)
     {

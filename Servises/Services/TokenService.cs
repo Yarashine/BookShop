@@ -3,32 +3,23 @@ using Microsoft.IdentityModel.Tokens;
 using Models.Abstractions;
 using Models.Dtos;
 using Models.Entities;
-using Repositories.Repositories;
 using Servises.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using Models.Exceptions;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Servises.Services;
 
-public class TokenService : BaseService, ITokenService
+public class TokenService(IUnitOfWork _unitOfWork, IConfiguration configuration) : BaseService(_unitOfWork), ITokenService
 {
-    private IConfiguration _configuration;
-    public TokenService(IUnitOfWork _unitOfWork, IConfiguration configuration) : base(_unitOfWork)
-    { _configuration = configuration; }
+    private readonly IConfiguration _configuration = configuration;
 
     public string GenerateToken() => Guid.NewGuid().ToString();
 
-    public async Task<JwtSecurityToken?> GenerateJwt(Guid userId,string email, string NameOfRole)
+    public Task<JwtSecurityToken> GenerateJwt(Guid userId,string email, string NameOfRole)
     {
-        //var user = await _repository.GetByEmailAsync(email) ?? throw new NotFoundException(nameof(User));
-        /*AuthorizationInfo? authorizationInfo = await unitOfWork.AuthorizationRepository.GetByEmailAsync(email);
-        if (authorizationInfo is null) return null;*/
-
 
         var claims = new List<Claim>
         {
@@ -50,31 +41,9 @@ public class TokenService : BaseService, ITokenService
             expires: now.AddHours(Convert.ToDouble(_configuration["Jwt:DurationInHours"])),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
-        return jwt;
+        return Task.FromResult(jwt);
     }
-
-    /*public async Task<LoginResponseDto> Refresh(RefreshDto refreshModel)
-    {
-        var principal = GetPrincipalFromExpiredToken(refreshModel.AccessToken);
-        if (principal?.Identity?.Name is null)
-            throw new BadRequestException("Invalid jwt.");
-
-        var user = await _repository.GetByEmailAsync(principal.Identity.Name)
-            ?? throw new NotFoundException(nameof(User));
-
-        if (user.RefreshToken != refreshModel.RefreshToken || user.RefreshTokenExpiry < DateTime.UtcNow)
-            throw new BadRequestException("Invalid refresh token.");
-
-        var token = await GenerateJwt(principal.Identity.Name);
-
-        return new(
-            JwtToken: new JwtSecurityTokenHandler().WriteToken(token),
-            Expiration: token.ValidTo,
-            RefreshToken: refreshModel.RefreshToken,
-            UserId: user.Id
-        );
-    }
-    private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
     {
         var key = _configuration["JWT:Key"] ?? throw new InvalidOperationException("Key not configured");
 
@@ -88,17 +57,30 @@ public class TokenService : BaseService, ITokenService
         return new JwtSecurityTokenHandler().ValidateToken(token, validation, out _);
     }
 
-    public async Task RevokeRefreshTokenByEmail(string userEmail)
+    public async Task RevokeUserRefreshTokenByEmail(string userEmail)
     {
         if (userEmail.IsNullOrEmpty())
             throw new UnauthorizedException("Invalid email.");
 
-        var user = await _repository.GetByEmailAsync(userEmail)
+        UserAuthorizationInfo? authorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(userEmail)
             ?? throw new NotFoundException(nameof(User));
 
-        user.RefreshToken = null;
-        user.RefreshTokenExpiry = null;
+        authorizationInfo.RefreshToken = null;
+        authorizationInfo.RefreshTokenExpiry = null;
 
-        await _repository.UpdateAsync(user);
-    }*/
+        await unitOfWork.SaveAllAsync();
+    }
+    public async Task RevokeAdminRefreshTokenByEmail(string adminEmail)
+    {
+        if (adminEmail.IsNullOrEmpty())
+            throw new UnauthorizedException("Invalid email.");
+
+        AdminAuthorizationInfo? authorizationInfo = await unitOfWork.AdminAuthorizationRepository.GetByEmailAsync(adminEmail)
+            ?? throw new NotFoundException(nameof(User));
+
+        authorizationInfo.RefreshToken = null;
+        authorizationInfo.RefreshTokenExpiry = null;
+
+        await unitOfWork.SaveAllAsync();
+    }
 }

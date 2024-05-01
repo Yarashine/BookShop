@@ -1,4 +1,4 @@
-﻿/*using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
 using Servises.Services;
 
@@ -9,7 +9,7 @@ namespace Api.Controllers;
 public class TagController : Controller
 {
     private readonly ITagService tagService;
-    public TagController(ITagService _tagService) 
+    public TagController(ITagService _tagService)
     {
         tagService = _tagService;
     }
@@ -51,4 +51,3 @@ public class TagController : Controller
 
 
 }
-*/

@@ -178,8 +178,8 @@ namespace BookShop.Migrations
                     b.Property<int>("Likes")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<int?>("Price")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Series")
                         .HasColumnType("text");
@@ -422,6 +422,9 @@ namespace BookShop.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("BankAccount")
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");

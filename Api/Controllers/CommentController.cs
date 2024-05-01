@@ -13,10 +13,10 @@ public class CommentController : Controller
     {
         commentService = _commentService;
     }
-    /*[HttpGet("{id}")]*/
-    /*public async Task<ActionResult<BookDto>> GetById([FromRoute] Guid id)
+    /*[HttpGet("{id}")]
+    public async Task<ActionResult<BookDto>> GetById([FromRoute] Guid id)
     {
-        var book = await cService.GetByIdAsync(id);
+        var book = await commentService.GetByIdAsync(id);
 
         if (book is null)
             return NotFound();

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BookShop.Migrations
 {
     /// <inheritdoc />
-    public partial class BookShop : Migration
+    public partial class shop : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -57,7 +57,8 @@ namespace BookShop.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Score = table.Column<decimal>(type: "numeric", nullable: false),
-                    State = table.Column<int>(type: "integer", nullable: false)
+                    State = table.Column<int>(type: "integer", nullable: false),
+                    BankAccount = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,7 +102,7 @@ namespace BookShop.Migrations
                     AuthorName = table.Column<string>(type: "text", nullable: false),
                     Series = table.Column<string>(type: "text", nullable: true),
                     DateOfPublication = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: true),
+                    Price = table.Column<int>(type: "integer", nullable: true),
                     Likes = table.Column<int>(type: "integer", nullable: false),
                     State = table.Column<int>(type: "integer", nullable: false)
                 },

@@ -1,4 +1,4 @@
-﻿/*using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
 
 namespace Api.Controllers;
@@ -50,4 +50,3 @@ public class GenreController : Controller
 
 
 }
-*/

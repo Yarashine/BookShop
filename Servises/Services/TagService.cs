@@ -13,7 +13,7 @@ public class TagService : BaseService, ITagService
         StringEntity? tag = await unitOfWork.TagRepository.GetByNameAsync(name);
         if (tag is null)
         {
-            await unitOfWork.TagRepository.AddAsync(new StringEntity() { Name = name });
+            await unitOfWork.TagRepository.AddAsync(new Tag() { Name = name });
             await unitOfWork.SaveAllAsync();
             return true;
         }

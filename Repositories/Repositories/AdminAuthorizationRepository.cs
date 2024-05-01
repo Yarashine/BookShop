@@ -5,18 +5,14 @@ using System.Linq.Expressions;
 
 namespace Repositories.Repositories;
 
-public class AdminAuthorizationRepository : IAdminAuthorizationRepository
+public class AdminAuthorizationRepository(ShopContext _context) : IAdminAuthorizationRepository
 {
-    protected readonly ShopContext context;
-    protected readonly DbSet<AdminAuthorizationInfo> entities;
-    public AdminAuthorizationRepository(ShopContext _context)
-    {
-        context = _context;
-        entities = _context.Set<AdminAuthorizationInfo>();
-    }
+    protected readonly ShopContext context = _context;
+    protected readonly DbSet<AdminAuthorizationInfo> entities = _context.Set<AdminAuthorizationInfo>();
+
     public async Task AddAsync(AdminAuthorizationInfo entity, CancellationToken cancellationToken)
     {
-        await entities.AddAsync(entity);
+        await entities.AddAsync(entity, cancellationToken);
     }
 
     public async Task DeleteAsync(string email, CancellationToken cancellationToken)
@@ -35,7 +31,7 @@ public class AdminAuthorizationRepository : IAdminAuthorizationRepository
         params Expression<Func<AdminAuthorizationInfo, object>>[]? includesProperties)
     {
         IQueryable<AdminAuthorizationInfo>? query = entities.AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<AdminAuthorizationInfo, object>>? included in includesProperties)
             {
@@ -54,7 +50,7 @@ public class AdminAuthorizationRepository : IAdminAuthorizationRepository
     CancellationToken cancellationToken = default, params Expression<Func<AdminAuthorizationInfo, object>>[]? includesProperties)
     {
         IQueryable<AdminAuthorizationInfo>? query = entities.AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<AdminAuthorizationInfo, object>>? included in includesProperties)
             {
@@ -67,10 +63,10 @@ public class AdminAuthorizationRepository : IAdminAuthorizationRepository
         }
         return await query.ToListAsync();
     }
-    public Task UpdateAsync(AdminAuthorizationInfo entity, CancellationToken cancellationToken = default)
+   /* public Task UpdateAsync(AdminAuthorizationInfo entity, CancellationToken cancellationToken = default)
     {
         context.Entry(entity).State = EntityState.Modified;
         return Task.CompletedTask;
-    }
+    }*/
 }
 

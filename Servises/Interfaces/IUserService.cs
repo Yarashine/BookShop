@@ -5,7 +5,9 @@ namespace Servises.Interfaces;
 
 public interface IUserService
 {
-
+    Task<bool> AddBankAccount(Guid id);
+    Task<bool> UpdateBankAccount(Guid id);
+    Task<bool> DeleteBankAccount(Guid id);
     Task<bool> UpdateUserAsync(RegisterUserDto user);
     Task<IReadOnlyList<User>> GetAllUsersAsync();
     Task<User?> GetUserByIdAsync(Guid id);

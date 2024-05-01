@@ -12,8 +12,8 @@ using Repositories;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(ShopContext))]
-    [Migration("20240411054543_BookShop")]
-    partial class BookShop
+    [Migration("20240426190543_shop")]
+    partial class shop
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -181,8 +181,8 @@ namespace BookShop.Migrations
                     b.Property<int>("Likes")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<int?>("Price")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Series")
                         .HasColumnType("text");
@@ -425,6 +425,9 @@ namespace BookShop.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("BankAccount")
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
