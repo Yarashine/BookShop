@@ -13,5 +13,5 @@ public class Comment : Entity
     public string? Description { get; set; } = null;
     public int Likes { get; set; } = 0;
     public int Dislikes { get; set; } = 0;
-    public List<Reaction> Reactions { get; set; } = new();
+    public List<Reaction> Reactions { get; set; } = [];
 }

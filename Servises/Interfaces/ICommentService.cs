@@ -5,7 +5,7 @@ namespace Servises.Interfaces;
 
 public interface ICommentService
 {
-    Task<bool> AddCommentAsync(CommentDto comment);
-    //Task<bool> DeleteCommentAsync(Guid commentId);
-    Task<bool> AddReactionToCommentAsync(ReactionDto reaction);
+    Task AddCommentAsync(CommentDto comment);
+    Task DeleteCommentAsync(Guid userId, Guid commentId);
+    Task UpdateReactionAsync(ReactionDto reaction);
 }

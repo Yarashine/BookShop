@@ -7,6 +7,8 @@ public interface IUserRepository
 {
     Task<User?> GetByIdWithAiAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<User?> GetByIdWithMediaAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<User?> GetByIdWithReactionsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithCommentsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithStatusAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByIdWithBooksToSellAsync(Guid id, CancellationToken cancellationToken = default);
@@ -19,6 +21,7 @@ public interface IUserRepository
     Task AddAsync(User entity, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> filter, CancellationToken cancellationToken = default);
+    Task UpdateAsync(User entity, CancellationToken cancellationToken = default);
 
 
 }

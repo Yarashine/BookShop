@@ -4,10 +4,11 @@ namespace Servises.Interfaces;
 
 public interface IAdministratorService
 {
-    Task<bool> BlockUserAsync(BlockedStatusDto status);
-    Task<bool> BlockBookAsync(BlockedStatusDto status);
-    Task<bool> BlockCommentAsync(BlockedStatusDto status);
-    Task<bool> UnBlockUserAsync(Guid id);
-    Task<bool> UnBlockBookAsync(Guid id);
-    Task<bool> UnBlockCommentAsync(Guid id);
+    Task<List<UnbanRequestDto>> AllUnblockRequestsAsync();
+    Task BlockUserAsync(BlockedStatusDto status);
+    Task BlockBookAsync(BlockedStatusDto status);
+    Task BlockCommentAsync(BlockedStatusDto status);
+    Task UnBlockUserAsync(Guid id);
+    Task UnBlockBookAsync(Guid id);
+    Task UnBlockCommentAsync(Guid id);
 }

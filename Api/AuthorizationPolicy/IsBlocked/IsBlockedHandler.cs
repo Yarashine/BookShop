@@ -28,7 +28,7 @@ public class IsBlockedHandler : AuthorizationHandler<IsBlockedRequirement>
         }
         Claim? id = context.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
         Claim? role = context.User.FindFirst(c => c.Type == ClaimTypes.Role);
-        if (role is not null && role.Value.ToString() == "Admin")
+        if (role is not null && (role.Value.ToString() == "Admin"))
         {
             context.Succeed(requirement);
             return;

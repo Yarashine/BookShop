@@ -36,19 +36,16 @@ public class BookRepository : IBookRepository
         IQueryable<Book>? query = entities.AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
-    public async Task<Book?> GetByIdWithMediaAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        IQueryable<Book>? query = entities.Include(b=> b.Cover).AsQueryable();
-        return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-    }
     public async Task<Book?> GetByIdWithBookAsync(Guid id, CancellationToken cancellationToken = default)
     {
         IQueryable<Book>? query = entities.Include(b => b.EBook).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
-    public async Task<Book?> GetByIdWithBookAndMediaAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Book?> GetByIdWithAllAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        IQueryable<Book>? query = entities.Include(b => b.Cover).Include(b => b.EBook).AsQueryable();
+        IQueryable<Book>? query = entities.Include(b => b.Cover)
+            .Include(b => b.Genres).Include(b => b.Tags)
+            .Include(b => b.Comments).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
@@ -60,7 +57,8 @@ public class BookRepository : IBookRepository
     public async Task<IReadOnlyList<Book>> ListAsync(Expression<Func<Book, bool>>? filter,
     CancellationToken cancellationToken = default, params Expression<Func<Book, object>>[]? includesProperties)
     {
-        IQueryable<Book>? query = entities.AsQueryable();
+        IQueryable<Book>? query = entities.Include(b => b.Cover)
+            .Include(b => b.Genres).Include(b => b.Tags).AsQueryable();
         if (includesProperties is not null && includesProperties.Any())
         {
             foreach (Expression<Func<Book, object>>? included in includesProperties)

@@ -5,18 +5,12 @@ namespace Servises.Interfaces;
 
 public interface IUserService
 {
-    Task<bool> AddBankAccount(Guid id);
-    Task<bool> UpdateBankAccount(Guid id);
-    Task<bool> DeleteBankAccount(Guid id);
-    Task<bool> UpdateUserAsync(RegisterUserDto user);
-    Task<IReadOnlyList<User>> GetAllUsersAsync();
-    Task<User?> GetUserByIdAsync(Guid id);
-    Task<User?> GetByIdWithComments(Guid id);
-    Task<List<Book>?> GetFavoritesAsync(Guid id);
-    Task<List<Book>?> GetLibraryAsync(Guid id);
-    Task<List<Book>?> GetBookToSellAsync(Guid id);
-    Task<List<Book>?> GetPurchasedBookAsync(Guid id);
-
-
-
+    Task UnbanRequestAsync(Guid userId, string? description);
+    Task UpdateUserAsync(Guid userId, UpdateUserDto user);
+    Task DeleteUserAsync(Guid id);
+    Task<User> GetByIdAsync(Guid id);
+    Task<List<SummaryBookDto>> GetFavoritesAsync(Guid id);
+    Task<List<SummaryBookDto>> GetLibraryAsync(Guid id);
+    Task<List<SummaryBookDto>> GetBookToSellAsync(Guid id);
+    Task<List<SummaryBookDto>> GetPurchasedBookAsync(Guid id);
 }

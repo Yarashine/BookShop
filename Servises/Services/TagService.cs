@@ -1,6 +1,7 @@
 ﻿using Models.Abstractions;
 using Models.Entities;
 using Servises.Interfaces;
+using Models.Exceptions;
 
 namespace Servises.Services;
 
@@ -8,46 +9,35 @@ public class TagService : BaseService, ITagService
 {
     public TagService(IUnitOfWork _unitOfWork) : base(_unitOfWork) { }
 
-    public async Task<bool> AddTagAsync(string name)
+    public async Task AddTagAsync(string name)
     {
-        StringEntity? tag = await unitOfWork.TagRepository.GetByNameAsync(name);
-        if (tag is null)
-        {
-            await unitOfWork.TagRepository.AddAsync(new Tag() { Name = name });
-            await unitOfWork.SaveAllAsync();
-            return true;
-        }
-        return false;
+        Tag? tag = await unitOfWork.TagRepository.GetByNameAsync(name);
+        if (tag is not null)
+            throw new BadRequestException("This tag is already exist");
+        await unitOfWork.TagRepository.AddAsync(new Tag() { Name = name });
+        await unitOfWork.SaveAllAsync();
     }
 
-    public async Task<bool> AddTagToBookAsync(string name, Guid id)
+    public async Task AddTagToBookAsync(string name, Guid id)
     {
-        StringEntity? tag = await unitOfWork.TagRepository.GetByNameWithBooksAsync(name);
-        Book? book = await unitOfWork.BookRepository.GetByIdAsync(id);
-        if (tag is not null && book is not null)
-        {
-            tag.Books.Add(book);
-            //book.Tags.Add((Tag)tag);
-            await unitOfWork.SaveAllAsync();
-            return true;
-        }
-        return false;
+        Tag tag = await unitOfWork.TagRepository.GetByNameWithBooksAsync(name)
+            ?? throw new NotFoundException(nameof(Tag));
+        Book book = await unitOfWork.BookRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Book));
+        tag.Books.Add(book);
+        await unitOfWork.SaveAllAsync();
     }
 
-    public async Task<bool> DeleteTagAsync(string name)
+    public async Task DeleteTagAsync(string name)
     {
-        StringEntity? tag = await unitOfWork.TagRepository.GetByNameAsync(name);
-        if (tag is null)
-        {
-            await unitOfWork.TagRepository.DeleteAsync(name);
-            await unitOfWork.SaveAllAsync();
-            return true;
-        }
-        return false;
+        Tag tag = await unitOfWork.TagRepository.GetByNameAsync(name)
+            ?? throw new NotFoundException(nameof(Tag));
+        await unitOfWork.TagRepository.DeleteAsync(name);
+        await unitOfWork.SaveAllAsync();
     }
     public async Task<IReadOnlyList<string>> AllTagsAsync()
     {
-        IReadOnlyList<StringEntity> tags = await unitOfWork.TagRepository.ListAllAsync();
+        IReadOnlyList<Tag> tags = await unitOfWork.TagRepository.ListAllAsync();
         IReadOnlyList<string> strings = tags.Select(genres => genres.Name).ToList();
         return strings;
     }

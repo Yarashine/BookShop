@@ -1,82 +1,57 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Models.Dtos;
 using Servises.Interfaces;
-using Models.Entities;
-using System.Runtime.InteropServices;
-using Mapster;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
+using Servises.Services;
 
 namespace Api.Controllers;
 
 [Authorize(Roles = "Admin")]
 [ApiController]
 [Route("/api")]
-public class AdministratorController : Controller
+public class AdministratorController(IAdministratorService administratorService) : Controller
 {
-    private readonly IAdministratorService administratorService;
-    public AdministratorController(IAdministratorService _administratorService)
+
+    [HttpGet("unblocks")]
+    public async Task<IActionResult> UnblockRequestsAsync()
     {
-        administratorService = _administratorService;
+        var user = await administratorService.AllUnblockRequestsAsync();
+        return Ok(user);
     }
     [HttpPut("block/user")]
     public async Task<IActionResult> BlockUser([FromForm] BlockedStatusDto blockedStatusDto)
     {
-        bool result = await administratorService.BlockUserAsync(blockedStatusDto);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.BlockUserAsync(blockedStatusDto);
         return Ok();
     }
     [HttpPut("block/book")]
     public async Task<IActionResult> BlockBook([FromBody] BlockedStatusDto blockedStatusDto)
     {
-        bool result = await administratorService.BlockBookAsync(blockedStatusDto);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.BlockBookAsync(blockedStatusDto);
         return Ok();
     }
     [HttpPut("block/comment")]
     public async Task<IActionResult> BlockComment([FromBody] BlockedStatusDto blockedStatusDto)
     {
-        bool result = await administratorService.BlockCommentAsync(blockedStatusDto);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.BlockCommentAsync(blockedStatusDto);
         return Ok();
     }
     [HttpPut("unblock/user")]
     public async Task<IActionResult> UnBlockUser([FromForm] Guid id)
     {
-        bool result = await administratorService.UnBlockUserAsync(id);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.UnBlockUserAsync(id);
         return Ok();
     }
     [HttpPut("unblock/book")]
     public async Task<IActionResult> UnBlockBook([FromBody] Guid id)
     {
-        bool result = await administratorService.UnBlockBookAsync(id);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.UnBlockBookAsync(id);
         return Ok();
     }
     [HttpPut("unblock/comment")]
     public async Task<IActionResult> UnBlockComment([FromBody] Guid id)
     {
-        bool result = await administratorService.UnBlockCommentAsync(id);
-
-        if (!result)
-            return BadRequest();
-
+        await administratorService.UnBlockCommentAsync(id);
         return Ok();
     }
 

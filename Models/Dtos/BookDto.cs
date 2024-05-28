@@ -2,5 +2,6 @@
 
 namespace Models.Dtos;
 
-public record BookDto(string Title, string? Description, Guid AuthorId, /*List<string>? tags,List<string>? genres,*/ MediaCreationDto? ImageDto, MediaCreationDto EBookDto,
-                      string? Series, decimal? Price);
+public record BookDto(string Title, string? Description, List<string>? Tags, List<string>? Genres, 
+                    MediaCreationDto? ImageDto, MediaCreationDto EBookDto,
+                      string? Series, int? Price);

@@ -8,6 +8,5 @@ public class IfBlockedStatus : Entity
     public Guid AdministratorId { get; set; }
     public Administrator Administrator { get; set; } = null!;
     public string NameOfAdmin { get; set; } = null!;
-    public int CountOfViolations { get; set; } = 0;
 
 }

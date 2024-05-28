@@ -86,15 +86,15 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookUser2", b =>
                 {
-                    b.Property<Guid>("BooksToSellId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("BoughtBooksId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("BooksToSellId", "BoughtBooksId");
+                    b.Property<Guid>("PurchasedBooksId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("BoughtBooksId");
+                    b.HasKey("BoughtBooksId", "PurchasedBooksId");
+
+                    b.HasIndex("PurchasedBooksId");
 
                     b.ToTable("BookUser2");
                 });
@@ -188,6 +188,7 @@ namespace BookShop.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -238,9 +239,6 @@ namespace BookShop.Migrations
                     b.Property<Guid>("BookId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CountOfViolations")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("DateTimeOfBan")
                         .HasColumnType("timestamp with time zone");
 
@@ -259,8 +257,7 @@ namespace BookShop.Migrations
 
                     b.HasIndex("AdministratorId");
 
-                    b.HasIndex("BookId")
-                        .IsUnique();
+                    b.HasIndex("BookId");
 
                     b.ToTable("BookStatus");
                 });
@@ -316,9 +313,6 @@ namespace BookShop.Migrations
 
                     b.Property<Guid>("CommentId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("CountOfViolations")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("DateTimeOfBan")
                         .HasColumnType("timestamp with time zone");
@@ -417,14 +411,43 @@ namespace BookShop.Migrations
                     b.ToTable("Tags");
                 });
 
+            modelBuilder.Entity("Models.Entities.UnbanRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("StatusId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("TimeOfCreation")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StatusId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UnbanRequests");
+                });
+
             modelBuilder.Entity("Models.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BankAccount")
-                        .HasColumnType("text");
+                    b.Property<int>("CommentaryViolations")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -432,9 +455,6 @@ namespace BookShop.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<decimal>("Score")
-                        .HasColumnType("numeric");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");
@@ -524,9 +544,6 @@ namespace BookShop.Migrations
                     b.Property<Guid>("AdministratorId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CountOfViolations")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("DateTimeOfBan")
                         .HasColumnType("timestamp with time zone");
 
@@ -548,8 +565,7 @@ namespace BookShop.Migrations
 
                     b.HasIndex("AdministratorId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserStatus");
                 });
@@ -616,15 +632,15 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookUser2", b =>
                 {
-                    b.HasOne("Models.Entities.Book", null)
-                        .WithMany()
-                        .HasForeignKey("BooksToSellId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Models.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("BoughtBooksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Entities.Book", null)
+                        .WithMany()
+                        .HasForeignKey("PurchasedBooksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -643,7 +659,7 @@ namespace BookShop.Migrations
             modelBuilder.Entity("Models.Entities.Book", b =>
                 {
                     b.HasOne("Models.Entities.User", "Author")
-                        .WithMany("PurchasedBooks")
+                        .WithMany("BooksToSell")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -671,8 +687,8 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.HasOne("Models.Entities.Book", "Book")
-                        .WithOne("Status")
-                        .HasForeignKey("Models.Entities.BookStatus", "BookId")
+                        .WithMany("Status")
+                        .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -749,6 +765,25 @@ namespace BookShop.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Models.Entities.UnbanRequest", b =>
+                {
+                    b.HasOne("Models.Entities.UserStatus", "Status")
+                        .WithOne()
+                        .HasForeignKey("Models.Entities.UnbanRequest", "StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Entities.User", "User")
+                        .WithOne()
+                        .HasForeignKey("Models.Entities.UnbanRequest", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Status");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Models.Entities.UserAuthorizationInfo", b =>
                 {
                     b.HasOne("Models.Entities.User", "User")
@@ -780,8 +815,8 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.HasOne("Models.Entities.User", "User")
-                        .WithOne("Status")
-                        .HasForeignKey("Models.Entities.UserStatus", "UserId")
+                        .WithMany("Status")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -820,9 +855,9 @@ namespace BookShop.Migrations
                     b.Navigation("AuthorizationInfo")
                         .IsRequired();
 
-                    b.Navigation("Comments");
+                    b.Navigation("BooksToSell");
 
-                    b.Navigation("PurchasedBooks");
+                    b.Navigation("Comments");
 
                     b.Navigation("Reactions");
 

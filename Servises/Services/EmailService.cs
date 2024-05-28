@@ -18,6 +18,12 @@ public class EmailService(IUnitOfWork _unitOfWork, IConfiguration configuration)
         var emailBody = $"To confirm your email <a href=\"{emailBodyUrl}\">click here </a> ";
         await SendEmail(email, subject, emailBody);
     }
+    /*public async Task SendConfirmEmail(string email, string scheme, string? other)
+    {
+        var subject = "Email confirmation";
+        var emailBody = $"To confirm your email <a href=\"{scheme + _config["DevTunnel:Url"] + other}\">click here </a> ";
+        await SendEmail(email, subject, emailBody);
+    }*/
 
     public async Task SendResetPasswordEmail(string email, string emailBodyUrl)
     {

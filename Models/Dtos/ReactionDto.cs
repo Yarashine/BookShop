@@ -1,5 +1,5 @@
 ﻿
 namespace Models.Dtos;
 
-public record ReactionDto(bool IsLike, Guid UserId, Guid CommentId);
+public record ReactionDto(bool IsLike, bool IsDelete,Guid UserId, Guid CommentId);
 

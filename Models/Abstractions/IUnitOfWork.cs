@@ -6,6 +6,7 @@ public interface IUnitOfWork
 {
     IUserRepository UserRepository { get; }
     IBookRepository BookRepository { get; }
+    IRepository<UnbanRequest> UnbanRequestRepository { get; }
     IRepository<Comment> CommentRepository { get; }
     IRepository<Administrator> AdministratorRepository { get; }
     IStringRepository<Tag> TagRepository { get; }
@@ -13,6 +14,5 @@ public interface IUnitOfWork
     IUserAuthorizationRepository UserAuthorizationRepository { get; }
     IAdminAuthorizationRepository AdminAuthorizationRepository { get; }
     public Task SaveAllAsync();
-    // public Task DeleteDataBaseAsync();
     public Task CreateDataBaseAsync();
 }

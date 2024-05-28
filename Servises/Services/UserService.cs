@@ -8,17 +8,41 @@ using Models.Exceptions;
 
 namespace Servises.Services;
 
-public class UserService(IUnitOfWork _unitOfWork, IPaymentService paymentService) : BaseService(_unitOfWork), IUserService
+public class UserService(IUnitOfWork _unitOfWork) : BaseService(_unitOfWork), IUserService
 {
-    public async Task<bool> AddUserAsync(RegisterUserDto user)
+    public async Task UnbanRequestAsync(Guid userId, string? description)
     {
-        /*User? user2 = await unitOfWork.UserRepository.GetByIdAsync(user);
-        if (user2 is null)
-            return false;*/
-        User user1 = user.Adapt<User>();
+        User user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(userId)
+            ?? throw new NotFoundException(nameof(User));
+        if (user.State == StateType.IsExisted)
+            throw new BadRequestException("User don't have block");
+        if (user.Status == null)
+            throw new BadRequestException("User don't have status");
+        var request2 = await unitOfWork.UnbanRequestRepository.FirstOrDefaultAsync(r => r.UserId== userId);
+
+        if (request2 != null)
+            await unitOfWork.UnbanRequestRepository.DeleteAsync(request2.Id);
+        var request = new UnbanRequest()
+        {
+            Description = description,
+            User = user,
+            UserId = userId,
+            Status = user.Status.OrderBy(s => s.DateTimeOfBan).ToList().LastOrDefault(),
+            TimeOfCreation = DateTime.Now.ToUniversalTime()
+        };
+        await unitOfWork.UnbanRequestRepository.AddAsync(request);
+        await unitOfWork.SaveAllAsync();
+    }
+
+    public async Task UpdateUserAsync(Guid userId, UpdateUserDto user)
+    {
+        var user1 = await unitOfWork.UserRepository.GetByIdWithMediaAsync(userId)
+            ?? throw new NotFoundException(nameof(User));
+        user1.Name = user.Name;
+        user1.Description = user.Description;
         if (user.ImageDto is not null)
         {
-            using var memoryStream = new MemoryStream();
+            using MemoryStream memoryStream = new();
             await user.ImageDto.File.CopyToAsync(memoryStream);
             user1.UserImage = new UserImage()
             {
@@ -28,96 +52,66 @@ public class UserService(IUnitOfWork _unitOfWork, IPaymentService paymentService
                 Bytes = memoryStream.ToArray()
             };
         }
-        await unitOfWork.UserRepository.AddAsync(user1);
+        else
+            user1.UserImage = null;
+        await unitOfWork.UserRepository.UpdateAsync(user1);
         await unitOfWork.SaveAllAsync();
-        return true;
     }
 
-
-
-    public async Task<bool> UpdateUserAsync(RegisterUserDto user)
+    public async Task<User> GetByIdAsync(Guid id)
     {
-        //await unitOfWork.UserRepository.UpdateAsync(user.Adapt<User>());
-        await unitOfWork.SaveAllAsync();
-        return true;
-    }
-
-    public async Task<IReadOnlyList<User>> GetAllUsersAsync()
-    {
-        return await unitOfWork.UserRepository.ListAllAsync();
-    }
-
-    public async Task<User?> GetUserByIdAsync(Guid id)
-    {
-        User? user = await unitOfWork.UserRepository.GetByIdAsync(id);
+        User user = await unitOfWork.UserRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(User));
         return user;
     }
 
-    public async Task<List<Book>?> GetFavoritesAsync(Guid id)
+    public async Task<List<SummaryBookDto>> GetFavoritesAsync(Guid id)
     {
-        User? user = await unitOfWork.UserRepository.GetByIdWithFavoritesAsync(id);
-        if (user is not null)
+        User user = await unitOfWork.UserRepository.GetByIdWithFavoritesAsync(id)
+            ?? throw new NotFoundException(nameof(User));
+        return user.Favorites.Adapt<List<SummaryBookDto>>();
+    }
+
+    public async Task<List<SummaryBookDto>> GetLibraryAsync(Guid id)
+    {
+        User user = await unitOfWork.UserRepository.GetByIdWithLibraryAsync(id)
+            ?? throw new NotFoundException(nameof(User));
+        return user.Library.Adapt<List<SummaryBookDto>>();
+    }
+
+    public async Task<List<SummaryBookDto>> GetBookToSellAsync(Guid id)
+    {
+        User user = await unitOfWork.UserRepository.GetByIdWithBooksToSellAsync(id)
+            ?? throw new NotFoundException(nameof(User));
+        return user.BooksToSell.Adapt<List<SummaryBookDto>>();
+    }
+
+    public async Task<List<SummaryBookDto>> GetPurchasedBookAsync(Guid id)
+    {
+        User user = await unitOfWork.UserRepository.GetByIdWithPurchasedBooksAsync(id)
+            ?? throw new NotFoundException(nameof(User));
+        return user.PurchasedBooks.Adapt<List<SummaryBookDto>>();
+    }
+    public async Task DeleteUserAsync(Guid id)
+    {
+        User user = await unitOfWork.UserRepository.GetByIdWithFavoritesAsync(id)
+            ?? throw new NotFoundException(nameof(User));
+        foreach (var item in user.Favorites)
         {
-            return user.Favorites;
+            item.Likes--;
         }
-        return null;
-    }
-
-    public async Task<List<Book>?> GetLibraryAsync(Guid id)
-    {
-        User? user = await unitOfWork.UserRepository.GetByIdWithLibraryAsync(id);
-        if (user is not null)
-        return user.Library;
-        return null;
-    }
-
-    public async Task<List<Book>?> GetBookToSellAsync(Guid id)
-    {
-        User? user = await unitOfWork.UserRepository.GetByIdWithBooksToSellAsync(id);
-        if (user is not null)
-        return user.BooksToSell;
-        return null;
-    }
-
-    public async Task<List<Book>?> GetPurchasedBookAsync(Guid id)
-    {
-        User? user = await unitOfWork.UserRepository.GetByIdWithPurchasedBooksAsync(id);
-        if (user is not null)
-        return user.PurchasedBooks;
-        return null;
-    }
-
-    public async Task<User?> GetByIdWithComments(Guid id)
-    {
-        User? user = await unitOfWork.UserRepository.GetByIdWithCommentsAsync(id);
-        return user;
-    }
-
-    public async Task<bool> AddBankAccount(Guid id)
-    {
-        var user = await unitOfWork.UserRepository.GetByIdWithAiAsync(id) 
-            ?? throw new NotFoundException(nameof(User));
-        if (user.BankAccount is not null) 
-            throw new BadRequestException("The user already has a bank account.");
-        user.BankAccount = await paymentService.CreateCustomer(user.AuthorizationInfo.Email);
-        return true;
-    }
-    public async Task<bool> UpdateBankAccount(Guid id)
-    {
-        var user = await unitOfWork.UserRepository.GetByIdWithAiAsync(id)
-            ?? throw new NotFoundException(nameof(User));
-        if (user.BankAccount is null) 
-            throw new BadRequestException("The user does not have a bank account.");
-        user.BankAccount = await paymentService.CreateCustomer(user.AuthorizationInfo.Email);
-        return true;
-    }
-    public async Task<bool> DeleteBankAccount(Guid id)
-    {
-        var user = await unitOfWork.UserRepository.GetByIdWithAiAsync(id)
-            ?? throw new NotFoundException(nameof(User));
-        if (user.BankAccount is null)
-            throw new BadRequestException("The user does not have a bank account.");
-        user.BankAccount = null;
-        return true;
+        User user2 = await unitOfWork.UserRepository.GetByIdWithReactionsAsync(id)
+             ?? throw new NotFoundException(nameof(User));
+        foreach(var item in user2.Reactions)
+        {
+            Comment comment = await unitOfWork.CommentRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException(nameof(Comment));
+            if(item.IsLike)
+                comment.Likes--;
+            else
+                comment.Dislikes--;
+        }
+        await unitOfWork.UserRepository.DeleteAsync(id);
+        await unitOfWork.SaveAllAsync();
     }
 }

@@ -20,30 +20,27 @@ namespace Api.Controllers;
 public class AdminAuthorizationController(Servises.Interfaces.IAuthorizationService _authorizationService,
     IEmailService _emailService, ITokenService _tokenService) : Controller
 {
-    private readonly Servises.Interfaces.IAuthorizationService authorizationService = _authorizationService;
-    private readonly IEmailService emailService = _emailService;
-    private readonly ITokenService tokenService = _tokenService;
 
     [HttpPost("register/admin")]
     public async Task<ActionResult<string?>> RegisterAdmin([FromBody] RegisterAdminDto registerDto)
     {
-        string? result = await authorizationService.RegisterAdminAsync(registerDto);
+        string? result = await _authorizationService.RegisterAdminAsync(registerDto);
         if (string.IsNullOrEmpty(result))
             return BadRequest();
-        var emailBodyUrl = Request.Scheme + "://" + Request.Host +
+       /* var emailBodyUrl = Request.Scheme + "://" + Request.Host +
             Url.Action("confirmadminemail", "adminauthorization", new { email = registerDto.Email, token = result });
-        await emailService.SendConfirmEmail(registerDto.Email, emailBodyUrl);
+        await emailService.SendConfirmEmail(registerDto.Email, emailBodyUrl);*/
         return result;
     }
 
     [HttpPost("login/admin")]
     public async Task<ActionResult<LoginResponseDto?>> LoginAdmin([FromBody] LoginDto loginDto)
     {
-        LoginResponseDto? result = await authorizationService.LoginAdminAsync(loginDto);
+        LoginResponseDto? result = await _authorizationService.LoginAdminAsync(loginDto);
         return result;
     }
 
-    [HttpPost("refresh/admin")]
+    /*[HttpPost("refresh/admin")]
     public async Task<ActionResult<LoginResponseDto>> RefreshAdmin([FromBody] RefreshDto model)
     {
         var response = await authorizationService.RefreshAdmin(model);
@@ -68,5 +65,5 @@ public class AdminAuthorizationController(Servises.Interfaces.IAuthorizationServ
         await tokenService.RevokeAdminRefreshTokenByEmail(userEmail);
         //await HttpContext.SignOutAsync(JwtBearerDefaults.AuthenticationScheme);
         return Ok();
-    }
+    }*/
 }

@@ -1,46 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
 using Servises.Services;
 
 namespace Api.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("/api")]
-public class TagController : Controller
+public class TagController(ITagService tagService) : Controller
 {
-    private readonly ITagService tagService;
-    public TagController(ITagService _tagService)
-    {
-        tagService = _tagService;
-    }
+
     [HttpPost("tag/add/{name}")]
-    public async Task<IActionResult> AddTag(string tag)
+    public async Task<IActionResult> AddTag(string name)
     {
-        bool result = await tagService.AddTagAsync(tag);
-
-        if (!result)
-            return BadRequest();
-
-        return Ok();
-    }
-    [HttpPost("tag/{name}/book/{id}")]
-    public async Task<IActionResult> AddTagToBook(string name, Guid id)
-    {
-        bool result = await tagService.AddTagToBookAsync(name, id);
-
-        if (!result)
-            return BadRequest();
-
+        await tagService.AddTagAsync(name);
         return Ok();
     }
     [HttpDelete("tag/{name}")]
     public async Task<IActionResult> DeleteTag(string name)
     {
-        bool result = await tagService.DeleteTagAsync(name);
-
-        if (!result)
-            return BadRequest();
-
+        await tagService.DeleteTagAsync(name);
         return Ok();
     }
     [HttpGet("tags")]

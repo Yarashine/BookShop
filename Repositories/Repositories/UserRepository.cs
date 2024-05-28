@@ -42,29 +42,43 @@ public class UserRepository(ShopContext _context) : IUserRepository
         IQueryable<User>? query = entities.Include(u => u.Comments).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
+    public async Task<User?> GetByIdWithReactionsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        IQueryable<User>? query = entities.Include(u => u.Reactions).AsQueryable();
+        return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         IQueryable<User>? query = entities.AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
+    public async Task<User?> GetByIdWithMediaAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        IQueryable<User>? query = entities.Include(u => u.UserImage).AsQueryable();
+        return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
     public async Task<User?> GetByIdWithBooksToSellAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        IQueryable<User>? query = entities.Include(u => u.BooksToSell).AsQueryable();
+        IQueryable<User>? query = entities.Include(u => u.BooksToSell).ThenInclude(b => b.Tags)
+            .Include(u => u.BooksToSell).ThenInclude(b => b.Genres).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
     public async Task<User?> GetByIdWithFavoritesAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        IQueryable<User>? query = entities.Include(u => u.Favorites).AsQueryable();
+        IQueryable<User>? query = entities.Include(u => u.Favorites).ThenInclude(b => b.Tags)
+            .Include(u => u.BooksToSell).ThenInclude(b => b.Genres).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
     public async Task<User?> GetByIdWithLibraryAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        IQueryable<User>? query = entities.Include(u => u.Library).AsQueryable();
+        IQueryable<User>? query = entities.Include(u => u.Library).ThenInclude(b => b.Tags)
+            .Include(u => u.BooksToSell).ThenInclude(b => b.Genres).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
     public async Task<User?> GetByIdWithPurchasedBooksAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        IQueryable<User>? query = entities.Include(u => u.PurchasedBooks).AsQueryable();
+        IQueryable<User>? query = entities.Include(u => u.PurchasedBooks).ThenInclude(b => b.Tags)
+            .Include(u => u.BooksToSell).ThenInclude(b => b.Genres).AsQueryable();
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
     public async Task<IReadOnlyList<User>> ListAllAsync(CancellationToken cancellationToken = default)
@@ -93,9 +107,9 @@ public class UserRepository(ShopContext _context) : IUserRepository
         return await query.ToListAsync();
     }
 
-    /*public Task UpdateAsync(User entity, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(User entity, CancellationToken cancellationToken = default)
     {
         context.Entry(entity).State = EntityState.Modified;
         return Task.CompletedTask;
-    }*/
+    }
 }

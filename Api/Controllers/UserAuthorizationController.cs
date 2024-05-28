@@ -20,26 +20,23 @@ namespace Api.Controllers;
 public class UserAuthorizationController(Servises.Interfaces.IAuthorizationService _authorizationService,
     IEmailService _emailService, ITokenService _tokenService) : Controller
 {
-    private readonly Servises.Interfaces.IAuthorizationService authorizationService = _authorizationService;
-    private readonly IEmailService emailService = _emailService;
-    private readonly ITokenService tokenService = _tokenService;
 
     [HttpPost("register/user")]
     public async Task<ActionResult<string?>> RegisterUser([FromForm] RegisterUserDto registerDto)
     {
-        string? result = await authorizationService.RegisterUserAsync(registerDto);
+        string? result = await _authorizationService.RegisterUserAsync(registerDto);
         if (string.IsNullOrEmpty(result))
             return BadRequest();
-        var emailBodyUrl = Request.Scheme + "://" + Request.Host + 
+        var emailBodyUrl = Request.Scheme + "://" + Request.Host +
             Url.Action("confirmuseremail", "userauthorization", new { email = registerDto.Email, token = result });
-        await emailService.SendConfirmEmail(registerDto.Email, emailBodyUrl);
+        await _emailService.SendConfirmEmail(registerDto.Email, emailBodyUrl);
         return result;
     }
 
     [HttpPost("login/user")]
     public async Task<ActionResult<LoginResponseDto?>> LoginUser([FromBody] LoginDto loginDto)
     {
-        LoginResponseDto? result = await authorizationService.LoginUserAsync(loginDto);
+        LoginResponseDto? result = await _authorizationService.LoginUserAsync(loginDto);
         if (result is null)
             return BadRequest();
         return result;
@@ -48,24 +45,25 @@ public class UserAuthorizationController(Servises.Interfaces.IAuthorizationServi
     [HttpPost("refresh/user")]
     public async Task<ActionResult<LoginResponseDto>> RefreshUser([FromBody] RefreshDto model)
     {
-        var response = await authorizationService.RefreshUser(model);
+        var response = await _authorizationService.RefreshUser(model);
         return Ok(response);
     }
 
     [HttpGet("confirmemail/user")]
     public async Task<IActionResult> ConfirmUserEmail([EmailAddress] string email, string token)
     {
-        await emailService.ConfirmUserEmailByToken(email, token);
+        await _emailService.ConfirmUserEmailByToken(email, token);
         return Ok("Confirmation was successful.");
     }
 
     [HttpPost("forgotpassword/user")]
     public async Task<IActionResult> ForgotPassword([EmailAddress] string email)
     {
-        var token = await authorizationService.UserForgotPassword(email);
+
+        var token = await _authorizationService.UserForgotPassword(email);
         var emailBodyUrl = Request.Scheme + "://" + Request.Host + 
-            Url.Action("resetpassword", "authorization", new { email, token });
-        await emailService.SendResetPasswordEmail(email, emailBodyUrl);
+            Url.Action("resetpassword", "userauthorization", new { email, token });
+        await _emailService.SendResetPasswordEmail(email, emailBodyUrl);
         return Ok($"Check {email} email. You may now reset your password whithin 1 hour.");
     }
 
@@ -79,7 +77,7 @@ public class UserAuthorizationController(Servises.Interfaces.IAuthorizationServi
     [HttpPost("resetpassword/user")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
     {
-        await authorizationService.UserResetPassword(model);
+        await _authorizationService.UserResetPassword(model);
         return Ok("Password has been successfully changed.");
     }
 
@@ -91,7 +89,7 @@ public class UserAuthorizationController(Servises.Interfaces.IAuthorizationServi
         {
             return BadRequest();
         }
-        await tokenService.RevokeUserRefreshTokenByEmail(userEmail);
+        await _tokenService.RevokeUserRefreshTokenByEmail(userEmail);
         //await HttpContext.SignOutAsync(JwtBearerDefaults.AuthenticationScheme);
         return Ok();
     }

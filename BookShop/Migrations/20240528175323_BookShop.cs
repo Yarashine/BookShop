@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BookShop.Migrations
 {
     /// <inheritdoc />
-    public partial class shop : Migration
+    public partial class BookShop : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,9 +56,8 @@ namespace BookShop.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    Score = table.Column<decimal>(type: "numeric", nullable: false),
                     State = table.Column<int>(type: "integer", nullable: false),
-                    BankAccount = table.Column<string>(type: "text", nullable: true)
+                    CommentaryViolations = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,7 +95,7 @@ namespace BookShop.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: true),
+                    Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     AuthorId = table.Column<Guid>(type: "uuid", nullable: false),
                     AuthorName = table.Column<string>(type: "text", nullable: false),
@@ -174,8 +173,7 @@ namespace BookShop.Migrations
                     DateTimeOfBan = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     AdministratorId = table.Column<Guid>(type: "uuid", nullable: false),
-                    NameOfAdmin = table.Column<string>(type: "text", nullable: false),
-                    CountOfViolations = table.Column<int>(type: "integer", nullable: false)
+                    NameOfAdmin = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -249,8 +247,7 @@ namespace BookShop.Migrations
                     DateTimeOfBan = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     AdministratorId = table.Column<Guid>(type: "uuid", nullable: false),
-                    NameOfAdmin = table.Column<string>(type: "text", nullable: false),
-                    CountOfViolations = table.Column<int>(type: "integer", nullable: false)
+                    NameOfAdmin = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -345,15 +342,15 @@ namespace BookShop.Migrations
                 name: "BookUser2",
                 columns: table => new
                 {
-                    BooksToSellId = table.Column<Guid>(type: "uuid", nullable: false),
-                    BoughtBooksId = table.Column<Guid>(type: "uuid", nullable: false)
+                    BoughtBooksId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PurchasedBooksId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BookUser2", x => new { x.BooksToSellId, x.BoughtBooksId });
+                    table.PrimaryKey("PK_BookUser2", x => new { x.BoughtBooksId, x.PurchasedBooksId });
                     table.ForeignKey(
-                        name: "FK_BookUser2_Books_BooksToSellId",
-                        column: x => x.BooksToSellId,
+                        name: "FK_BookUser2_Books_PurchasedBooksId",
+                        column: x => x.PurchasedBooksId,
                         principalTable: "Books",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -418,6 +415,33 @@ namespace BookShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UnbanRequests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TimeOfCreation = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StatusId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UnbanRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UnbanRequests_UserStatus_StatusId",
+                        column: x => x.StatusId,
+                        principalTable: "UserStatus",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UnbanRequests_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CommentStatus",
                 columns: table => new
                 {
@@ -427,8 +451,7 @@ namespace BookShop.Migrations
                     DateTimeOfBan = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     AdministratorId = table.Column<Guid>(type: "uuid", nullable: false),
-                    NameOfAdmin = table.Column<string>(type: "text", nullable: false),
-                    CountOfViolations = table.Column<int>(type: "integer", nullable: false)
+                    NameOfAdmin = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -498,8 +521,7 @@ namespace BookShop.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_BookStatus_BookId",
                 table: "BookStatus",
-                column: "BookId",
-                unique: true);
+                column: "BookId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookTag_TagsName",
@@ -517,9 +539,9 @@ namespace BookShop.Migrations
                 column: "LibraryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookUser2_BoughtBooksId",
+                name: "IX_BookUser2_PurchasedBooksId",
                 table: "BookUser2",
-                column: "BoughtBooksId");
+                column: "PurchasedBooksId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Books_AuthorId",
@@ -564,6 +586,18 @@ namespace BookShop.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UnbanRequests_StatusId",
+                table: "UnbanRequests",
+                column: "StatusId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UnbanRequests_UserId",
+                table: "UnbanRequests",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserAuthorizations_UserId",
                 table: "UserAuthorizations",
                 column: "UserId",
@@ -583,8 +617,7 @@ namespace BookShop.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_UserStatus_UserId",
                 table: "UserStatus",
-                column: "UserId",
-                unique: true);
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -624,13 +657,13 @@ namespace BookShop.Migrations
                 name: "Reactions");
 
             migrationBuilder.DropTable(
+                name: "UnbanRequests");
+
+            migrationBuilder.DropTable(
                 name: "UserAuthorizations");
 
             migrationBuilder.DropTable(
                 name: "UserImages");
-
-            migrationBuilder.DropTable(
-                name: "UserStatus");
 
             migrationBuilder.DropTable(
                 name: "Genres");
@@ -642,10 +675,13 @@ namespace BookShop.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "Administrators");
+                name: "UserStatus");
 
             migrationBuilder.DropTable(
                 name: "Books");
+
+            migrationBuilder.DropTable(
+                name: "Administrators");
 
             migrationBuilder.DropTable(
                 name: "Users");

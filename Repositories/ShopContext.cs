@@ -4,9 +4,8 @@ using System.Reflection;
 
 namespace Repositories;
 
-public partial class ShopContext : DbContext
+public partial class ShopContext(DbContextOptions<ShopContext> options) : DbContext(options)
 {
-    public ShopContext(DbContextOptions<ShopContext>  options) : base(options) { }
     public DbSet<User> Users { get; set; }
     public DbSet<Book> Books { get; set; }
     public DbSet<Administrator> Administrators { get; set; }
@@ -22,6 +21,7 @@ public partial class ShopContext : DbContext
     public DbSet<Reaction> Reactions { get; set; }
     public DbSet<AdminAuthorizationInfo> AdminAuthorizations { get; set; }
     public DbSet<UserAuthorizationInfo> UserAuthorizations { get; set; }
+    public DbSet<UnbanRequest> UnbanRequests { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresEnum<StateType>();
@@ -34,9 +34,10 @@ public partial class ShopContext : DbContext
 
 
         modelBuilder.Entity<User>()
-            .HasMany(a => a.PurchasedBooks)
+            .HasMany(a => a.BooksToSell)
             .WithOne(b => b.Author)
-            .HasForeignKey(b => b.AuthorId);
+            .HasForeignKey(b => b.AuthorId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<User>()
             .HasMany(u => u.Favorites)
             .WithMany(b => b.AddedInFavorites);
@@ -44,7 +45,7 @@ public partial class ShopContext : DbContext
             .HasMany(u => u.Library)
             .WithMany(b => b.AddedInLibrary);
         modelBuilder.Entity<User>()
-            .HasMany(u => u.BooksToSell)
+            .HasMany(u => u.PurchasedBooks)
             .WithMany(b => b.BoughtBooks);
         modelBuilder.Entity<User>()
             .HasMany(u => u.Comments)
@@ -56,18 +57,22 @@ public partial class ShopContext : DbContext
             .HasForeignKey(r => r.UserId);
 
         modelBuilder.Entity<User>()
-            .HasOne(u => u.Status)
+            .HasMany(u => u.Status)
             .WithOne(s => s.User)
-        .HasForeignKey<UserStatus>(s => s.UserId);
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<User>()
             .HasOne(u => u.UserImage)
             .WithOne(i => i.User)
-            .HasForeignKey<UserImage>(i => i.UserId);
+            .HasForeignKey<UserImage>(i => i.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<User>()
             .HasOne(u => u.AuthorizationInfo)
             .WithOne(i => i.User)
-            .HasForeignKey<UserAuthorizationInfo>(a => a.UserId);
+            .HasForeignKey<UserAuthorizationInfo>(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserAuthorizationInfo>().HasKey(e => e.Email);
         modelBuilder.Entity<AdminAuthorizationInfo>().HasKey(e => e.Email);
@@ -76,10 +81,12 @@ public partial class ShopContext : DbContext
         modelBuilder.Entity<Genre>().HasKey(s => s.Name);
         
 
+
         modelBuilder.Entity<Book>()
             .HasMany(b => b.Comments)
             .WithOne(c => c.Book)
-            .HasForeignKey(c => c.BookId);
+            .HasForeignKey(c => c.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Book>()
             .HasMany(b => b.Tags)
             .WithMany(t => t.Books);
@@ -89,32 +96,48 @@ public partial class ShopContext : DbContext
         modelBuilder.Entity<Book>()
             .HasOne(b => b.EBook)
             .WithOne(e => e.Book)
-            .HasForeignKey<EBook>(e => e.BookId);
+            .HasForeignKey<EBook>(e => e.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Book>()
-            .HasOne(b => b.Status)
+            .HasMany(b => b.Status)
             .WithOne(s => s.Book)
-        .HasForeignKey<BookStatus>(s=>s.BookId);
+            .HasForeignKey(s=>s.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Book>()
             .HasOne(b => b.Cover)
             .WithOne(i => i.Book)
-            .HasForeignKey<BookImage>(i=>i.BookId);
+            .HasForeignKey<BookImage>(i=>i.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         modelBuilder.Entity<Comment>()
             .HasMany(c => c.Reactions)
             .WithOne(r => r.Comment)
-            .HasForeignKey(r => r.CommentId);
+            .HasForeignKey(r => r.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Status)
             .WithOne(s => s.Comment)
-            .HasForeignKey<CommentStatus>(s => s.CommentId);
+            .HasForeignKey<CommentStatus>(s => s.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        
+        modelBuilder.Entity<UnbanRequest>()
+            .HasOne(u => u.User)
+            .WithOne()
+            .HasForeignKey<UnbanRequest>(u => u.UserId);
+        modelBuilder.Entity<UnbanRequest>()
+            .HasOne(u => u.Status)
+            .WithOne()
+            .HasForeignKey<UnbanRequest>(u => u.StatusId);
+            
+
         modelBuilder.Entity<Administrator>()
             .HasOne(a => a.AuthorizationInfo)
             .WithOne(i => i.User)
-            .HasForeignKey<AdminAuthorizationInfo>(a => a.UserId);
+            .HasForeignKey<AdminAuthorizationInfo>(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }

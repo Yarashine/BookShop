@@ -6,19 +6,27 @@ using Models.Dtos;
 using Stripe;
 using Mapster;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Stripe.Checkout;
+using System.Security.Policy;
+using System.Net;
+using Models.Configs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace Servises.Services;
 
 public class PaymentService : IPaymentService
 {
-    private readonly IOptions<StripeSettings> _stripeSettings;
-    public PaymentService(IOptions<StripeSettings> stripeSettings)
+    private readonly StripeSessionConfig _sessionConfig;
+    private readonly IConfiguration _config;
+    public PaymentService(IConfiguration config, IOptions<StripeSessionConfig> sessionConfig)
     {
-        _stripeSettings = stripeSettings;
-        StripeConfiguration.ApiKey = _stripeSettings.Value.SecretKey;
-        
+        StripeConfiguration.ApiKey = config["StripeOptions:PrivateKey"];
+        _config = config;
+        _sessionConfig = sessionConfig.Value;
     }
-    public async Task<string> CreateCustomer(string email)
+        
+    /*public async Task<string> CreateCustomer(string email)
     {
         var options = new CustomerCreateOptions
         {
@@ -27,23 +35,47 @@ public class PaymentService : IPaymentService
         var service = new CustomerService();
         Customer customer = await service.CreateAsync(options);
         return customer.Id;
-    }
-    public string Charge(User user, int totalCost)
+    }*/
+    public async Task<string> Charge(Guid userId, string userEmail, BuyBookDto book)
     {
-        var charges = new ChargeService();
 
-
-        var charge = charges.Create(new ChargeCreateOptions
+        var options = new SessionCreateOptions
         {
-            Amount = totalCost,
-            Description = "Buying an e-book",
-            Currency = "usd",
-            Customer = user.BankAccount
-        });
+            PaymentMethodTypes = [_sessionConfig.PaymentMethod,],
+            LineItems =
+            [
+                new() {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (int)(book.Price * 100), // цена в копейках
+                        Currency = "usd",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = book.Title,
+                        },
+                    },
+                    Quantity = 1,
+                },
+            ],
+            Metadata = new Dictionary<string, string>
+            {
+                { "bookId", book.Id.ToString() },
+                { "userId", userId.ToString() }
+            },
+            Mode = "payment",
+            CustomerEmail = userEmail,
+            SuccessUrl = _sessionConfig.SuccessUrl,
+            CancelUrl = _sessionConfig.CancelUrl,
+        };
+        var service = new SessionService();
+        var session = await service.CreateAsync(options);
+        return session.Url;
+    }
 
-        if (charge.Status != "succeeded")
-            throw new BadRequestException("Payment error.");
-        string BalanceTransactionId = charge.BalanceTransactionId;
-        return BalanceTransactionId;
+    public Event EventFromJson(string json, HttpRequest request)
+    {
+        return EventUtility.ConstructEvent(json,
+            request.Headers["Stripe-Signature"], 
+            _config["StripeOptions:Whkey"]) ?? throw new BadRequestException("Desiarylization error");
     }
 }

@@ -11,12 +11,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Api.AuthorizationPolicy.IsBlocked;
-using Api.AuthorizationPolicy.IsBunned;
 using Stripe;
+using Models.Configs;
+using Api.Middlewares;
+using FluentValidation.AspNetCore;
+using System.Reflection;
 
 namespace BookShop;
 public class Program
 {
+    [Obsolete]
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -28,8 +32,10 @@ public class Program
 
         builder.Services.AddControllers();
 
+
+        builder.Services.AddFluentValidation(v => v.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
+
         builder.Services.AddScoped<IAuthorizationHandler, IsBlockedHandler>();
-        builder.Services.AddScoped<IAuthorizationHandler, IsBunnedHandler>();
 
         builder.Services.AddScoped<Servises.Interfaces.IAuthorizationService, AuthorizationService>();
         builder.Services.AddScoped<ITokenService, Servises.Services.TokenService>();
@@ -41,14 +47,12 @@ public class Program
         builder.Services.AddScoped<ICommentService, CommentService>();
         builder.Services.AddScoped<IAdministratorService, AdministratorService>();
         builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-        builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+
+        builder.Services.Configure<StripeSessionConfig>(opt => builder.Configuration.GetSection("StripeOptions").Bind(opt));
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy("IsNotBlocked", policy =>
                 policy.Requirements.Add(new IsBlockedRequirement()));
-        _ = builder.Services.AddAuthorizationBuilder()
-            .AddPolicy("IsNotBunned", policy =>
-                policy.Requirements.Add(new IsBunnedRequirement()));
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(option =>
@@ -110,6 +114,9 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

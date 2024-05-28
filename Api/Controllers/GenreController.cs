@@ -1,45 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
 
 namespace Api.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("/api")]
-public class GenreController : Controller
+public class GenreController(IGenreService genreService) : Controller
 {
-    private readonly IGenreService genreService;
-    public GenreController(IGenreService _genreService)
-    {
-        genreService = _genreService;
-    }
+
     [HttpPost("genre/add/{genre}")]
     public async Task<IActionResult> AddGenre(string genre)
     {
-        bool result = await genreService.AddGenreAsync(genre);
-
-        if (!result)
-            return BadRequest();
-
-        return Ok();
-    }
-    [HttpPost("genre/{name}/book/{id}")]
-    public async Task<IActionResult> AddGenreToBook(string name, Guid id)
-    {
-        bool result = await genreService.AddGenreToBookAsync(name, id);
-
-        if (!result)
-            return BadRequest();
-
+        await genreService.AddGenreAsync(genre);
         return Ok();
     }
     [HttpDelete("genre/{name}")]
     public async Task<IActionResult> DeleteGenre(string name)
     {
-        bool result = await genreService.DeleteGenreAsync(name);
-
-        if (!result)
-            return BadRequest();
-
+        await genreService.DeleteGenreAsync(name);
         return Ok();
     }
     [HttpGet("genres")]
