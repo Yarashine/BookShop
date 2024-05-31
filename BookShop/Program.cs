@@ -1,7 +1,6 @@
 using Servises.Interfaces;
 using Servises.Services;
 using Repositories;
-using Models.Entities;
 using Models.Exceptions;
 using Models.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Api.AuthorizationPolicy.IsBlocked;
-using Stripe;
 using Models.Configs;
 using Api.Middlewares;
 using FluentValidation.AspNetCore;
@@ -116,7 +114,7 @@ public class Program
         app.UseHttpsRedirection();
 
 
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
+        //app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

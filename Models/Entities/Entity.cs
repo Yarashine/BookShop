@@ -7,11 +7,9 @@ public class Entity
     public Guid Id { get; set; }
 
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        Entity? e = obj as Entity;
-        bool v = e == null || obj == null || GetType() != obj.GetType();
-        if (v)
+        if (obj is not Entity e || obj == null || GetType() != obj.GetType())
             return false;
         return Id == e.Id;
     }

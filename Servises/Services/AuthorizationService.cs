@@ -22,8 +22,14 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
     {
 
         UserAuthorizationInfo? ai = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(registerDto.Email);
-        if (ai is not null)
+        if (ai is not null && ai.IsEmailConfirmed)
             throw new BadRequestException("User with this email already exist");
+        else if(ai is not null)
+        {
+            await unitOfWork.UserRepository.DeleteAsync(ai.UserId);
+            await unitOfWork.UserAuthorizationRepository.DeleteAsync(registerDto.Email);
+            await unitOfWork.SaveAllAsync();
+        }
         CreatePasswordHashAndSalt(registerDto.Password, out byte[] hash, out byte[] salt);
         var token = _tokenService.GenerateToken();
         ai = new()
@@ -75,26 +81,38 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
 
         return token;
     }
-    public async Task<LoginResponseDto> RefreshUser(RefreshDto refreshModel)
+    public async Task<LoginResponseDto> Refresh(RefreshDto refreshModel)
     {
         var principal = _tokenService.GetPrincipalFromExpiredToken(refreshModel.AccessToken);
         if (principal?.Identity?.Name is null)
             throw new BadRequestException("Invalid jwt.");
 
-        UserAuthorizationInfo userAuthorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(principal.Identity.Name)
-           ?? throw new NotFoundException(nameof(User));
+        UserAuthorizationInfo? userAuthorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(principal.Identity.Name);
 
-        if (userAuthorizationInfo.RefreshToken != refreshModel.RefreshToken || userAuthorizationInfo.RefreshTokenExpiry < DateTime.UtcNow)
-            throw new BadRequestException("Invalid refresh token.");
+        AdminAuthorizationInfo? adminAuthorizationInfo = await unitOfWork.AdminAuthorizationRepository.GetByEmailAsync(principal.Identity.Name);
 
         var id = Guid.Parse(principal.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-        var user = await unitOfWork.UserRepository.GetByIdAsync(id)
-          ??  throw new NotFoundException(nameof(User));
-        if (user.State==StateType.IsBanned)
-            throw new BadRequestException($"{nameof(User)} is banned");
-        if (user.State == StateType.IsBlocked)
-            throw new BadRequestException($"{nameof(User)} is blocked");
+        if (adminAuthorizationInfo is not  null)
+        {
+            if (adminAuthorizationInfo.RefreshToken != refreshModel.RefreshToken || adminAuthorizationInfo.RefreshTokenExpiry < DateTime.UtcNow)
+                throw new BadRequestException("Invalid refresh token.");
+
+            var Admin = await unitOfWork.AdministratorRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException(nameof(Administrator));
+
+        }
+        else if(userAuthorizationInfo is not null)
+        {
+
+            if (userAuthorizationInfo.RefreshToken != refreshModel.RefreshToken || userAuthorizationInfo.RefreshTokenExpiry < DateTime.UtcNow)
+                throw new BadRequestException("Invalid refresh token.");
+
+            var user = await unitOfWork.UserRepository.GetByIdAsync(id)
+              ?? throw new NotFoundException(nameof(User));
+        }
+        else
+            throw new NotFoundException(nameof(User));
 
         var token = await _tokenService.GenerateJwt(id, principal.Identity.Name, principal.Identity.AuthenticationType
             ?? throw new BadRequestException("Invalid jwt."));
@@ -106,7 +124,7 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
             Id: id
         );
     }
-    public async Task<LoginResponseDto> RefreshAdmin(RefreshDto refreshModel)
+   /* public async Task<LoginResponseDto> RefreshAdmin(RefreshDto refreshModel)
     {
         var principal = _tokenService.GetPrincipalFromExpiredToken(refreshModel.AccessToken);
         if (principal?.Identity?.Name is null)
@@ -133,17 +151,20 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
             RefreshToken: refreshModel.RefreshToken,
             Id: id
         );
-    }
+    }*/
     public static void CreatePasswordHashAndSalt(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
         using var hmac = new HMACSHA512();
         passwordSalt = hmac.Key;
         passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
     }
-    public async Task<LoginResponseDto> LoginUserAsync(LoginDto loginModel)
+    public async Task<LoginResponseDto> LoginAsync(LoginDto loginModel)
     {
-        AuthorizationInfo authorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(loginModel.Email)
-          ??  throw new NotFoundException(nameof(User));
+        AuthorizationInfo? authorizationInfo = await unitOfWork.AdminAuthorizationRepository.GetByEmailAsync(loginModel.Email);
+        if (authorizationInfo is null)
+            authorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(loginModel.Email)
+                ?? throw new NotFoundException(nameof(User));
+
         if (!CheckPassword(loginModel.Password, authorizationInfo.PasswordHash, authorizationInfo.PasswordSalt))
             throw new BadRequestException("Invalid password.");
         if (!authorizationInfo.IsEmailConfirmed)
@@ -165,7 +186,7 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
             Id: authorizationInfo.UserId
         );
     }
-    public async Task<LoginResponseDto> LoginAdminAsync(LoginDto loginModel)
+    /*public async Task<LoginResponseDto> LoginAdminAsync(LoginDto loginModel)
     {
         AuthorizationInfo authorizationInfo = await unitOfWork.AdminAuthorizationRepository.GetByEmailAsync(loginModel.Email)
            ?? throw new NotFoundException(nameof(User));
@@ -187,7 +208,7 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
             RefreshToken: refreshToken,
             Id: authorizationInfo.UserId
         );
-    }
+    }*/
 
     public static bool CheckPassword(string password, byte[] userPasswordHash, byte[] userPasswordSalt)
     {

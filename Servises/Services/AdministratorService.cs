@@ -15,17 +15,17 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
         List<UnbanRequestDto> unban = unbans.Adapt<List<UnbanRequestDto>>();
         return unban;
     }
-    public async Task BlockBookAsync(BlockedStatusDto status)
+    public async Task BlockBookAsync(Guid AdministratorId, BlockedStatusDto status)
     {
         Book book = await unitOfWork.BookRepository.GetByIdAsync(status.BlockedEntityId)
             ?? throw new NotFoundException(nameof(Book));
-        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(status.AdministratorId)
+        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(AdministratorId)
             ?? throw new NotFoundException(nameof(Administrator));
         if (book.Status is null)
             throw new BadRequestException("Status is null");
         BookStatus Status = new()
         {
-            AdministratorId = status.AdministratorId,
+            AdministratorId = AdministratorId,
             Description = status.Description,
             StateType = StateType.IsBlocked,
             NameOfAdmin = administrator.Name,
@@ -37,11 +37,11 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
         await unitOfWork.SaveAllAsync();
     }
 
-    public async Task BlockCommentAsync(BlockedStatusDto status)
+    public async Task BlockCommentAsync(Guid AdministratorId, BlockedStatusDto status)
     {
         Comment comment = await unitOfWork.CommentRepository.GetByIdAsync(status.BlockedEntityId)
             ?? throw new NotFoundException(nameof(Comment));
-        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(status.AdministratorId)
+        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(AdministratorId)
             ?? throw new NotFoundException(nameof(Administrator));
         User user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(comment.AuthorId)
             ?? throw new NotFoundException(nameof(User));
@@ -51,23 +51,22 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
         comment.Status.NameOfAdmin = administrator.Name;
         comment.Status.Administrator = administrator;
         comment.Status.DateTimeOfBan = DateTime.UtcNow;
-        comment.Status.AdministratorId = status.AdministratorId;
+        comment.Status.AdministratorId = AdministratorId;
         comment.Status.Description = status.Description;
         comment.State = StateType.IsBlocked;
         if (user.CommentaryViolations >= 4)
         {
-            BlockedStatusDto blockedStatusDto = new(status.AdministratorId, 
-                "The user left 4 comments that violated community rules", user.Id);
-            await BlockUserAsync(blockedStatusDto);
+            BlockedStatusDto blockedStatusDto = new("The user left 4 comments that violated community rules", user.Id);
+            await BlockUserAsync(AdministratorId, blockedStatusDto);
         }
         await unitOfWork.SaveAllAsync();
     }
 
-    public async Task BlockUserAsync(BlockedStatusDto status)
+    public async Task BlockUserAsync(Guid AdministratorId, BlockedStatusDto status)
     {
         User user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(status.BlockedEntityId)
             ?? throw new NotFoundException(nameof(User));
-        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(status.AdministratorId)
+        Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(AdministratorId)
             ?? throw new NotFoundException(nameof(Administrator));
         if(user.State == StateType.IsBlocked)
             throw new BadRequestException("User is already ban");
@@ -75,7 +74,7 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
             throw new BadRequestException("Status is null");
         UserStatus Status = new()
         {
-            AdministratorId = status.AdministratorId,
+            AdministratorId = AdministratorId,
             Description = status.Description,
             StateType = StateType.IsBlocked,
             NameOfAdmin = administrator.Name,

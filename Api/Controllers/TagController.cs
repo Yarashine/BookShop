@@ -1,22 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
-using Servises.Services;
 
 namespace Api.Controllers;
 
-[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("/api")]
 public class TagController(ITagService tagService) : Controller
 {
-
+    [Authorize(Roles = "Admin")]
     [HttpPost("tag/add/{name}")]
     public async Task<IActionResult> AddTag(string name)
     {
         await tagService.AddTagAsync(name);
         return Ok();
     }
+    [Authorize(Roles = "Admin")]
     [HttpDelete("tag/{name}")]
     public async Task<IActionResult> DeleteTag(string name)
     {

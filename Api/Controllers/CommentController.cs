@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Servises.Interfaces;
 using Models.Dtos;
-using Servises.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Api.Controllers;
-
 [ApiController]
 [Authorize(Roles = "IsExistedUser")]
+[Authorize(Policy = "IsNotBlocked")]
 [Route("/api")]
 public class CommentController(ICommentService commentService) : Controller
 {
@@ -15,12 +16,16 @@ public class CommentController(ICommentService commentService) : Controller
     [HttpPost("add/comment")]
     public async Task<IActionResult> Add([FromForm] CommentDto commentDto)
     {
-        await commentService.AddCommentAsync(commentDto);
+        var AuthorId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await commentService.AddCommentAsync(AuthorId, commentDto);
         return Ok();
     }
-    [HttpDelete("delete/comment")]
-    public async Task<IActionResult> DeleteLibrary([FromForm] Guid userId, Guid commentId)
+    [HttpDelete("delete/comment/{commentId}")]
+    public async Task<IActionResult> DeleteLibrary([FromRoute] Guid commentId)
     {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
         await commentService.DeleteCommentAsync(userId, commentId);
         return Ok();
     }

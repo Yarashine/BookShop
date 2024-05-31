@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.Repositories;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
 
 namespace Servises.Services;
 
@@ -144,8 +145,51 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
         }
         if (book.ImageDto is not null)
         {
+            // Check for file existence
+            if (book.ImageDto.File == null || book.ImageDto.File.Length == 0)
+            {
+                throw new InvalidOperationException("The file is not loaded or is empty.");
+            }
+
+            // Check the MIME type of the file
+            var allowedImageTypes = new[] { "image/jpeg", "image/png"};
+            if (!allowedImageTypes.Contains(book.ImageDto.File.ContentType))
+            {
+                throw new InvalidOperationException("The file must be an image (jpeg, png).");
+            }
+
+            // Check file extension
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png"};
+            var fileExtension = Path.GetExtension(book.ImageDto.File.FileName)?.ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                throw new InvalidOperationException("The file must have one of the following extensions: .jpg, .jpeg, .png.");
+            }
+
+            // Check file size (for example, no more than 5MB)
+            const long maxFileSizeInBytes = 5 * 1024 * 1024; // 5 MB
+            if (book.ImageDto.File.Length > maxFileSizeInBytes)
+            {
+                throw new InvalidOperationException("The file size must not exceed 5MB.");
+            }
+
             using var memoryStream = new MemoryStream();
             await book.ImageDto.File.CopyToAsync(memoryStream);
+
+            // Check image resolution
+            memoryStream.Position = 0;
+            using var image = Image.FromStream(memoryStream);
+            const int maxWidth = 1920;
+            const int maxHeight = 1080;
+            if (image.Width > maxWidth || image.Height > maxHeight)
+            {
+                throw new InvalidOperationException($"Image resolution must not exceed {maxWidth}x{maxHeight} pixels.");
+            }
+
+            // Example of checking for malicious content (requires additional implementation)
+            // CheckForMaliciousContent(memoryStream);
+
+            //Save the image
             book1.Cover = new BookImage()
             {
                 BookId = book1.Id,

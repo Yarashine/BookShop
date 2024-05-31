@@ -10,9 +10,9 @@ namespace Servises.Services;
 
 public class CommentService(IUnitOfWork _unitOfWork) : BaseService(_unitOfWork), ICommentService
 {
-    public async Task AddCommentAsync(CommentDto comment)
+    public async Task AddCommentAsync(Guid AuthorId, CommentDto comment)
     {
-        User user = await unitOfWork.UserRepository.GetByIdAsync(comment.AuthorId)
+        User user = await unitOfWork.UserRepository.GetByIdAsync(AuthorId)
             ?? throw new NotFoundException(nameof(User));
         Book book = await unitOfWork.BookRepository.GetByIdAsync(comment.BookId)
             ?? throw new NotFoundException(nameof(Book));

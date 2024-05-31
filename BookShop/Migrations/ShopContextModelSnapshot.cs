@@ -21,7 +21,7 @@ namespace BookShop.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "blocked_type", new[] { "blocked_book", "blocked_user", "blocked_comment" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "state_type", new[] { "is_existed", "is_blocked", "is_banned" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "state_type", new[] { "is_existed", "is_blocked" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("BookGenre", b =>

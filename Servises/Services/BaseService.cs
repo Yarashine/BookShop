@@ -2,11 +2,7 @@
 
 namespace Servises.Services;
 
-public abstract class BaseService
+public abstract class BaseService(IUnitOfWork _unitOfWork)
 {
-    protected readonly IUnitOfWork unitOfWork;
-    public BaseService(IUnitOfWork _unitOfWork)
-    {
-        unitOfWork = _unitOfWork;
-    }
+    protected readonly IUnitOfWork unitOfWork = _unitOfWork;
 }

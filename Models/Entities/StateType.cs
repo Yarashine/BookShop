@@ -3,6 +3,5 @@
 public enum StateType
 {
     IsExisted,
-    IsBlocked,
-    IsBanned
+    IsBlocked
 }

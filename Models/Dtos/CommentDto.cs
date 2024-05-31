@@ -1,3 +1,3 @@
 ﻿namespace Models.Dtos;
 
-public record CommentDto(Guid AuthorId, Guid BookId,string? Description);
+public record CommentDto(Guid BookId,string? Description);

@@ -2,7 +2,8 @@
 using Models.Dtos;
 using Servises.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Servises.Services;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Api.Controllers;
 
@@ -21,19 +22,25 @@ public class AdministratorController(IAdministratorService administratorService)
     [HttpPut("block/user")]
     public async Task<IActionResult> BlockUser([FromForm] BlockedStatusDto blockedStatusDto)
     {
-        await administratorService.BlockUserAsync(blockedStatusDto);
+        var AdministratorId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await administratorService.BlockUserAsync(AdministratorId, blockedStatusDto);
         return Ok();
     }
     [HttpPut("block/book")]
     public async Task<IActionResult> BlockBook([FromBody] BlockedStatusDto blockedStatusDto)
     {
-        await administratorService.BlockBookAsync(blockedStatusDto);
+        var AdministratorId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await administratorService.BlockBookAsync(AdministratorId, blockedStatusDto);
         return Ok();
     }
     [HttpPut("block/comment")]
     public async Task<IActionResult> BlockComment([FromBody] BlockedStatusDto blockedStatusDto)
     {
-        await administratorService.BlockCommentAsync(blockedStatusDto);
+        var AdministratorId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await administratorService.BlockCommentAsync(AdministratorId, blockedStatusDto);
         return Ok();
     }
     [HttpPut("unblock/user")]

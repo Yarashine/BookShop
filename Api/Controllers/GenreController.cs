@@ -4,18 +4,18 @@ using Servises.Interfaces;
 
 namespace Api.Controllers;
 
-[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("/api")]
 public class GenreController(IGenreService genreService) : Controller
 {
-
+    [Authorize(Roles = "Admin")]
     [HttpPost("genre/add/{genre}")]
     public async Task<IActionResult> AddGenre(string genre)
     {
         await genreService.AddGenreAsync(genre);
         return Ok();
     }
+    [Authorize(Roles = "Admin")]
     [HttpDelete("genre/{name}")]
     public async Task<IActionResult> DeleteGenre(string name)
     {

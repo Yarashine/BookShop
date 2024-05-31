@@ -7,79 +7,95 @@ using Mapster;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
 using Servises.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Api.Controllers;
 
-
-//[Authorize(Policy = "IsNotBlocked")]
-//[Authorize(Policy = "IsNotBunned")]
 [ApiController]
 [Route("/api")]
 public class UserController(IUserService _userService) : Controller
 {
-    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
     [HttpPost("user/unban")]
-    public async Task<IActionResult> UnbanRequest([FromForm] Guid userId, string? description)
+    public async Task<IActionResult> UnbanRequest([FromForm] string? description)
     {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
         await _userService.UnbanRequestAsync(userId, description);
         return Ok();
     }
 
-    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
     [HttpPut("user/update")]
-    public async Task<IActionResult> UpdateUserAsync([FromForm] Guid userId, [FromForm] UpdateUserDto user)
+    public async Task<IActionResult> UpdateUserAsync([FromForm] UpdateUserDto user)
     {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
         await _userService.UpdateUserAsync(userId, user);
         return Ok();
     }
 
-    [Authorize(Roles = "IsExistedUser")]
-    [HttpDelete("user/delete/{id}")]
-    public async Task<IActionResult> DeleteUserAsync([FromRoute] Guid id)
+    [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
+    [HttpDelete("user/delete")]
+    public async Task<IActionResult> DeleteUserAsync()
     {
-        await _userService.DeleteUserAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await _userService.DeleteUserAsync(userId);
         return Ok();
     }
-    //[Authorize(Roles = "User,Admin")]
-    [HttpGet("user/{id}")]
-    public async Task<IActionResult> GetByIdAsync([FromRoute] Guid id)
+
+    [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
+    [HttpGet("user")]
+    public async Task<IActionResult> GetByIdAsync()
     {
-        var user = await _userService.GetByIdAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var user = await _userService.GetByIdAsync(userId);
         return Ok(user);
     }
 
     [Authorize(Roles = "IsExistedUser")]
     [Authorize(Policy = "IsNotBlocked")]
-    [HttpGet("user/favorites/{id}")]
-    public async Task<IActionResult> GetFavoritesAsync([FromRoute] Guid id)
+    [HttpGet("user/favorites")]
+    public async Task<IActionResult> GetFavoritesAsync()
     {
-        var favorites = await _userService.GetFavoritesAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var favorites = await _userService.GetFavoritesAsync(userId);
         return Ok(favorites);
     }
 
     [Authorize(Roles = "User")]
     [Authorize(Policy = "IsNotBlocked")]
-    [HttpGet("user/library/{id}")]
-    public async Task<IActionResult> GetLibraryAsync([FromRoute] Guid id)
+    [HttpGet("user/library")]
+    public async Task<IActionResult> GetLibraryAsync()
     {
-        var library = await _userService.GetLibraryAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var library = await _userService.GetLibraryAsync(userId);
         return Ok(library);
     }
 
-    [Authorize(Roles = "IsExistedUser")]
-    [HttpGet("user/bookstosell/{id}")]
-    public async Task<IActionResult> GetBookToSellAsync([FromRoute] Guid id)
+    [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
+    [HttpGet("user/bookstosell")]
+    public async Task<IActionResult> GetBookToSellAsync()
     {
-        var bookToSell = await _userService.GetBookToSellAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var bookToSell = await _userService.GetBookToSellAsync(userId);
         return Ok(bookToSell);
     }
 
     [Authorize(Roles = "IsExistedUser")]
     [Authorize(Policy = "IsNotBlocked")]
-    [HttpGet("user/purchasedbook/{id}")]
-    public async Task<IActionResult> GetPurchasedBookAsync([FromRoute] Guid id)
+    [HttpGet("user/purchasedbook")]
+    public async Task<IActionResult> GetPurchasedBookAsync()
     {
-        var purchasedBook = await _userService.GetPurchasedBookAsync(id);
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var purchasedBook = await _userService.GetPurchasedBookAsync(userId);
         return Ok(purchasedBook);
     }
 }

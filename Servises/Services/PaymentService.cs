@@ -47,7 +47,7 @@ public class PaymentService : IPaymentService
                 new() {
                     PriceData = new SessionLineItemPriceDataOptions
                     {
-                        UnitAmount = (int)(book.Price * 100), // цена в копейках
+                        UnitAmount = (int)(book.Price * 100), 
                         Currency = "usd",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {

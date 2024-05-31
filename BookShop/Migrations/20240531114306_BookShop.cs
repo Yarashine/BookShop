@@ -13,7 +13,7 @@ namespace BookShop.Migrations
         {
             migrationBuilder.AlterDatabase()
                 .Annotation("Npgsql:Enum:blocked_type", "blocked_book,blocked_user,blocked_comment")
-                .Annotation("Npgsql:Enum:state_type", "is_existed,is_blocked,is_banned");
+                .Annotation("Npgsql:Enum:state_type", "is_existed,is_blocked");
 
             migrationBuilder.CreateTable(
                 name: "Administrators",
