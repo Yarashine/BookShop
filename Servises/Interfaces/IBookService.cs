@@ -7,7 +7,7 @@ namespace Servises.Interfaces;
 
 public interface IBookService
 {
-    Task<IReadOnlyList<SummaryBookDto>> GetBooksAsync(FilterDto filter);
+    Task<IReadOnlyList<SummaryBookDto>> GetBooksAsync(Guid? userId, FilterDto filter);
     Task WebHook(string json, HttpRequest request);
     Task AddLikeToBookAsync(Guid userId, Guid bookId);
     Task<string> BuyBookAsync(Guid userId, Guid bookId);

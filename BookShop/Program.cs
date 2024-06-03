@@ -51,7 +51,6 @@ public class Program
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy("IsNotBlocked", policy =>
                 policy.Requirements.Add(new IsBlockedRequirement()));
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(option =>
         {
@@ -104,7 +103,6 @@ public class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -113,8 +111,6 @@ public class Program
 
         app.UseHttpsRedirection();
 
-
-        //app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.UseAuthentication();
         app.UseAuthorization();

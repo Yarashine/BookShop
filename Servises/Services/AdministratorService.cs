@@ -41,19 +41,24 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
     {
         Comment comment = await unitOfWork.CommentRepository.GetByIdAsync(status.BlockedEntityId)
             ?? throw new NotFoundException(nameof(Comment));
+        if (comment.State == StateType.IsBlocked)
+            throw new BadRequestException("Comment is already block");
         Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(AdministratorId)
             ?? throw new NotFoundException(nameof(Administrator));
         User user = await unitOfWork.UserRepository.GetByIdWithStatusAsync(comment.AuthorId)
             ?? throw new NotFoundException(nameof(User));
         user.CommentaryViolations++;
-        comment.Status = status.Adapt<CommentStatus>();
-        comment.Status.StateType = StateType.IsBlocked;
-        comment.Status.NameOfAdmin = administrator.Name;
-        comment.Status.Administrator = administrator;
-        comment.Status.DateTimeOfBan = DateTime.UtcNow;
-        comment.Status.AdministratorId = AdministratorId;
-        comment.Status.Description = status.Description;
-        comment.State = StateType.IsBlocked;
+        if (comment.Status is null)
+        {
+            comment.Status = status.Adapt<CommentStatus>();
+            comment.Status.StateType = StateType.IsBlocked;
+            comment.Status.NameOfAdmin = administrator.Name;
+            comment.Status.Administrator = administrator;
+            comment.Status.DateTimeOfBan = DateTime.UtcNow;
+            comment.Status.AdministratorId = AdministratorId;
+            comment.Status.Description = status.Description;
+            comment.State = StateType.IsBlocked;
+        }
         if (user.CommentaryViolations >= 4)
         {
             BlockedStatusDto blockedStatusDto = new("The user left 4 comments that violated community rules", user.Id);
@@ -69,7 +74,7 @@ public class AdministratorService(IUnitOfWork _unitOfWork) : BaseService(_unitOf
         Administrator administrator = await unitOfWork.AdministratorRepository.GetByIdAsync(AdministratorId)
             ?? throw new NotFoundException(nameof(Administrator));
         if(user.State == StateType.IsBlocked)
-            throw new BadRequestException("User is already ban");
+            throw new BadRequestException("User is already block");
         if (user.Status is null)
             throw new BadRequestException("Status is null");
         UserStatus Status = new()

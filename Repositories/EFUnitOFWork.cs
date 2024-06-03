@@ -9,8 +9,8 @@ public class EfUnitOfWork : IUnitOfWork
     private readonly ShopContext context;
     private readonly Lazy<IUserRepository> userRepository;
     private readonly Lazy<IBookRepository> bookRepository;
+    private readonly Lazy<ICommentRepository> commentRepository;
     private readonly Lazy<IRepository<UnbanRequest>> unbanRequestRepository;
-    private readonly Lazy<IRepository<Comment>> commentRepository;
     private readonly Lazy<IRepository<Administrator>> administratorRepository;
     private readonly Lazy<IStringRepository<Genre>> genreRepository;
     private readonly Lazy<IStringRepository<Tag>> tagRepository;
@@ -23,7 +23,7 @@ public class EfUnitOfWork : IUnitOfWork
         userRepository = new Lazy<IUserRepository>(() => new UserRepository(context));
         bookRepository = new Lazy<IBookRepository>(() => new BookRepository(context));
         unbanRequestRepository = new Lazy<IRepository<UnbanRequest>>(() => new EfRepository<UnbanRequest>(context));
-        commentRepository = new Lazy<IRepository<Comment>>(() => new EfRepository<Comment>(context));
+        commentRepository = new Lazy<ICommentRepository>(() => new CommentRepository(context));
         administratorRepository = new Lazy<IRepository<Administrator>>(() => new EfRepository<Administrator>(context));
         genreRepository = new Lazy<IStringRepository<Genre>>(() => new StringRepository<Genre>(context));
         tagRepository = new Lazy<IStringRepository<Tag>>(() => new StringRepository<Tag>(context));
@@ -34,7 +34,7 @@ public class EfUnitOfWork : IUnitOfWork
     public IUserRepository UserRepository => userRepository.Value;
     public IBookRepository BookRepository => bookRepository.Value;
     public IRepository<UnbanRequest> UnbanRequestRepository => unbanRequestRepository.Value;
-    public IRepository<Comment> CommentRepository => commentRepository.Value;
+    public ICommentRepository CommentRepository => commentRepository.Value;
     public IRepository<Administrator> AdministratorRepository => administratorRepository.Value;
     public IStringRepository<Genre> GenreRepository => genreRepository.Value;
     public IStringRepository<Tag> TagRepository => tagRepository.Value;

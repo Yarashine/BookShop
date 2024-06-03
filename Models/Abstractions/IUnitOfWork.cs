@@ -7,7 +7,7 @@ public interface IUnitOfWork
     IUserRepository UserRepository { get; }
     IBookRepository BookRepository { get; }
     IRepository<UnbanRequest> UnbanRequestRepository { get; }
-    IRepository<Comment> CommentRepository { get; }
+    ICommentRepository CommentRepository { get; }
     IRepository<Administrator> AdministratorRepository { get; }
     IStringRepository<Tag> TagRepository { get; }
     IStringRepository<Genre> GenreRepository { get; }

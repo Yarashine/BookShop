@@ -28,7 +28,7 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
         await unitOfWork.BookRepository.DeleteAsync(bookId);
         await unitOfWork.SaveAllAsync();
     }
-    public async Task<IReadOnlyList<SummaryBookDto>> GetBooksAsync(FilterDto filter)
+    public async Task<IReadOnlyList<SummaryBookDto>> GetBooksAsync(Guid? userId, FilterDto filter)
     {
         var books = await unitOfWork.BookRepository.ListAsync(b =>
         (string.IsNullOrEmpty(filter.Title) || EF.Functions.Like(b.Title, $"%{filter.Title}%")) &&
@@ -37,7 +37,37 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
         );
         if (filter.Sort is null || filter.Sort == 0)
         {
-            books = [.. books.OrderBy(b => b.Title)];
+            if(userId is not  null)
+            {
+                var user1 = await unitOfWork.UserRepository.GetByIdWithPurchasedBooksAsync(userId.Value);
+                var user2 = await unitOfWork.UserRepository.GetByIdWithFavoritesAsync(userId.Value);
+                if (user1 != null && user2 != null)
+                {
+                    List<Book> userBooks = user1.PurchasedBooks.Concat(user2.Favorites).ToList();
+                    var genresCount = userBooks
+                        .SelectMany(b => b.Genres)
+                        .GroupBy(g => g.Name)
+                        .ToDictionary(g => g.Key, g => g.Count());
+
+                    var tagsCount = userBooks
+                        .SelectMany(b => b.Tags)
+                        .GroupBy(t => t.Name)
+                        .ToDictionary(t => t.Key, t => t.Count());
+
+                    var sortedBooks = books
+                        .Select(book => new
+                        {
+                            Book = book,
+                            Weight = book.Genres.Sum(g => genresCount.ContainsKey(g.Name) ? genresCount[g.Name] : 0) +
+                                     book.Tags.Sum(t => tagsCount.ContainsKey(t.Name) ? tagsCount[t.Name] : 0)
+                        })
+                        .OrderByDescending(b => b.Weight)
+                        .Select(b => b.Book)
+                        .ToList();
+                }
+            }
+            else
+                books = [.. books.OrderBy(b => b.Title)];
         }
         else if(filter.Sort == 1)
         {
@@ -145,20 +175,17 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
         }
         if (book.ImageDto is not null)
         {
-            // Check for file existence
             if (book.ImageDto.File == null || book.ImageDto.File.Length == 0)
             {
                 throw new InvalidOperationException("The file is not loaded or is empty.");
             }
 
-            // Check the MIME type of the file
             var allowedImageTypes = new[] { "image/jpeg", "image/png"};
             if (!allowedImageTypes.Contains(book.ImageDto.File.ContentType))
             {
                 throw new InvalidOperationException("The file must be an image (jpeg, png).");
             }
 
-            // Check file extension
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png"};
             var fileExtension = Path.GetExtension(book.ImageDto.File.FileName)?.ToLower();
             if (!allowedExtensions.Contains(fileExtension))
@@ -166,17 +193,15 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
                 throw new InvalidOperationException("The file must have one of the following extensions: .jpg, .jpeg, .png.");
             }
 
-            // Check file size (for example, no more than 5MB)
-            const long maxFileSizeInBytes = 5 * 1024 * 1024; // 5 MB
+            const long maxFileSizeInBytes = 5 * 1024 * 1024; 
             if (book.ImageDto.File.Length > maxFileSizeInBytes)
             {
                 throw new InvalidOperationException("The file size must not exceed 5MB.");
             }
 
             using var memoryStream = new MemoryStream();
-            await book.ImageDto.File.CopyToAsync(memoryStream);
+            /*await book.ImageDto.File.CopyToAsync(memoryStream);
 
-            // Check image resolution
             memoryStream.Position = 0;
             using var image = Image.FromStream(memoryStream);
             const int maxWidth = 1920;
@@ -184,12 +209,8 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
             if (image.Width > maxWidth || image.Height > maxHeight)
             {
                 throw new InvalidOperationException($"Image resolution must not exceed {maxWidth}x{maxHeight} pixels.");
-            }
+            }*/
 
-            // Example of checking for malicious content (requires additional implementation)
-            // CheckForMaliciousContent(memoryStream);
-
-            //Save the image
             book1.Cover = new BookImage()
             {
                 BookId = book1.Id,
@@ -200,6 +221,19 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
         }
         using (var memoryStream = new MemoryStream())
         {
+            const long maxFileSize = 5 * 1024 * 1024; 
+            if (book.EBookDto.File.Length > maxFileSize)
+            {
+                throw new InvalidOperationException("Размер файла превышает допустимый лимит.");
+            }
+
+            var allowedFileTypes = new List<string> { "application/pdf", "application/epub+zip","application/fb2", 
+                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain" }; 
+            if (!allowedFileTypes.Contains(book.EBookDto.File.ContentType))
+            {
+                throw new InvalidOperationException("Недопустимый тип файла.");
+            }
+
             await book.EBookDto.File.CopyToAsync(memoryStream);
             book1.EBook = new EBook()
             {
@@ -210,6 +244,7 @@ public class BookService(IUnitOfWork _unitOfWork, IPaymentService paymentService
                 Book = book1
             };
         }
+
         book1.DateOfPublication = DateTime.Now.ToUniversalTime();
         await unitOfWork.BookRepository.AddAsync(book1);
         user.BooksToSell.Add(book1);

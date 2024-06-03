@@ -83,7 +83,13 @@ public class BookController(IBookService _bookService) : Controller
     [HttpPost("books")]
     public async Task<IActionResult> Get([FromForm] FilterDto filter)
     {
-        var books = await _bookService.GetBooksAsync(filter);
+        Guid? userId = null; 
+        if (User is not null && User.Identity is not null && User.Identity.IsAuthenticated)
+        {
+            userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+                ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        }
+        var books = await _bookService.GetBooksAsync(userId, filter);
         return Ok(books);
     }
 

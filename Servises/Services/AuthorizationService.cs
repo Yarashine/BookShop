@@ -20,7 +20,32 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
 
     public async Task<string> RegisterUserAsync(RegisterUserDto registerDto)
     {
+        if (registerDto.ImageDto != null)
+        {
+            if (registerDto.ImageDto == null || registerDto.ImageDto.File == null || registerDto.ImageDto.File.Length == 0)
+            {
+                throw new InvalidOperationException("The file is empty.");
+            }
 
+            var allowedImageTypes = new[] { "image/jpeg", "image/png" };
+            if (!allowedImageTypes.Contains(registerDto.ImageDto.File.ContentType))
+            {
+                throw new InvalidOperationException("The file must be an image (jpeg, png).");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var fileExtension = Path.GetExtension(registerDto.ImageDto.File.FileName)?.ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                throw new InvalidOperationException("The file must have one of the following extensions: .jpg, .jpeg, .png.");
+            }
+
+            const long maxFileSizeInBytes = 5 * 1024 * 1024;
+            if (registerDto.ImageDto.File.Length > maxFileSizeInBytes)
+            {
+                throw new InvalidOperationException("The file size must not exceed 5MB.");
+            }
+        }
         UserAuthorizationInfo? ai = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(registerDto.Email);
         if (ai is not null && ai.IsEmailConfirmed)
             throw new BadRequestException("User with this email already exist");
@@ -41,6 +66,7 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
         };
         User user = registerDto.Adapt<User>();
         user.AuthorizationInfo = ai;
+
         if (registerDto.ImageDto is not null)
         {
             using MemoryStream memoryStream = new();
@@ -161,18 +187,27 @@ public class AuthorizationService(IUnitOfWork _unitOfWork, ITokenService tokenSe
     public async Task<LoginResponseDto> LoginAsync(LoginDto loginModel)
     {
         AuthorizationInfo? authorizationInfo = await unitOfWork.AdminAuthorizationRepository.GetByEmailAsync(loginModel.Email);
+        bool isAdmin=true;
         if (authorizationInfo is null)
+        {
             authorizationInfo = await unitOfWork.UserAuthorizationRepository.GetByEmailAsync(loginModel.Email)
                 ?? throw new NotFoundException(nameof(User));
+            isAdmin=false;
+        }
 
         if (!CheckPassword(loginModel.Password, authorizationInfo.PasswordHash, authorizationInfo.PasswordSalt))
             throw new BadRequestException("Invalid password.");
         if (!authorizationInfo.IsEmailConfirmed)
             throw new BadRequestException("Email is not confirmed.");
         JwtSecurityToken? jwt;
-        User user = await unitOfWork.UserRepository.GetByIdAsync(authorizationInfo.UserId)
-           ?? throw new NotFoundException(nameof(User));
-        jwt = await _tokenService.GenerateJwt(authorizationInfo.UserId, loginModel.Email, user.State.ToString() + "User");
+        if (isAdmin)
+            jwt = await _tokenService.GenerateJwt(authorizationInfo.UserId, loginModel.Email, "Admin");
+        else
+        {
+            User user = await unitOfWork.UserRepository.GetByIdAsync(authorizationInfo.UserId)
+               ?? throw new NotFoundException(nameof(User));
+            jwt = await _tokenService.GenerateJwt(authorizationInfo.UserId, loginModel.Email, user.State.ToString() + "User");
+        }
         var refreshToken = _tokenService.GenerateToken();
 
         authorizationInfo.RefreshToken = refreshToken;

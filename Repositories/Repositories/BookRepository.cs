@@ -5,18 +5,14 @@ using System.Linq.Expressions;
 
 namespace Repositories.Repositories;
 
-public class BookRepository : IBookRepository
+public class BookRepository(ShopContext _context) : IBookRepository
 {
-    protected readonly ShopContext context;
-    protected readonly DbSet<Book> entities;
-    public BookRepository(ShopContext _context)
-    {
-        context = _context;
-        entities = _context.Set<Book>();
-    }
+    protected readonly ShopContext context = _context;
+    protected readonly DbSet<Book> entities = _context.Set<Book>();
+
     public async Task AddAsync(Book entity, CancellationToken cancellationToken)
     {
-        await entities.AddAsync(entity);
+        await entities.AddAsync(entity, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -59,7 +55,7 @@ public class BookRepository : IBookRepository
     {
         IQueryable<Book>? query = entities.Include(b => b.Cover)
             .Include(b => b.Genres).Include(b => b.Tags).AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<Book, object>>? included in includesProperties)
             {

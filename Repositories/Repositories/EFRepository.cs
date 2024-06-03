@@ -5,18 +5,14 @@ using System.Linq.Expressions;
 
 namespace Repositories.Repositories;
 
-public class EfRepository<T> : IRepository<T> where T : Entity
+public class EfRepository<T>(ShopContext _context) : IRepository<T> where T : Entity
 {
-    protected readonly ShopContext context;
-    protected readonly DbSet<T> entities;
-    public EfRepository(ShopContext _context)
-    {
-        context = _context;
-        entities = _context.Set<T>();
-    }
+    protected readonly ShopContext context = _context;
+    protected readonly DbSet<T> entities = _context.Set<T>();
+
     public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
-        await entities.AddAsync(entity);
+        await entities.AddAsync(entity, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -35,7 +31,7 @@ public class EfRepository<T> : IRepository<T> where T : Entity
         params Expression<Func<T, object>>[]? includesProperties)
     {
         IQueryable<T>? query = entities.AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<T, object>>? included in includesProperties)
             {
@@ -54,7 +50,7 @@ public class EfRepository<T> : IRepository<T> where T : Entity
     CancellationToken cancellationToken = default, params Expression<Func<T, object>>[]? includesProperties)
     {
         IQueryable<T>? query = entities.AsQueryable();
-        if (includesProperties is not null && includesProperties.Any())
+        if (includesProperties is not null && includesProperties.Length != 0)
         {
             foreach (Expression<Func<T, object>>? included in includesProperties)
             {
