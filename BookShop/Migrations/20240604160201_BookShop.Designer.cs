@@ -12,7 +12,7 @@ using Repositories;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(ShopContext))]
-    [Migration("20240531114306_BookShop")]
+    [Migration("20240604160201_BookShop")]
     partial class BookShop
     {
         /// <inheritdoc />
@@ -102,6 +102,21 @@ namespace BookShop.Migrations
                     b.ToTable("BookUser2");
                 });
 
+            modelBuilder.Entity("BookUser3", b =>
+                {
+                    b.Property<Guid>("CoAuthoredBooksId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CoAuthorsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CoAuthoredBooksId", "CoAuthorsId");
+
+                    b.HasIndex("CoAuthorsId");
+
+                    b.ToTable("BookCoAuthors", (string)null);
+                });
+
             modelBuilder.Entity("Models.Entities.AdminAuthorizationInfo", b =>
                 {
                     b.Property<string>("Email")
@@ -184,6 +199,9 @@ namespace BookShop.Migrations
                     b.Property<int?>("Price")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("ReleaseEBook")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Series")
                         .HasColumnType("text");
 
@@ -199,6 +217,43 @@ namespace BookShop.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Books");
+                });
+
+            modelBuilder.Entity("Models.Entities.BookChangeLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EBookId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("EBookId")
+                        .IsUnique();
+
+                    b.ToTable("BookChangeLogs");
                 });
 
             modelBuilder.Entity("Models.Entities.BookImage", b =>
@@ -354,6 +409,9 @@ namespace BookShop.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<Guid>("ChangeLogId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -364,8 +422,7 @@ namespace BookShop.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookId")
-                        .IsUnique();
+                    b.HasIndex("BookId");
 
                     b.ToTable("EBooks");
                 });
@@ -648,6 +705,21 @@ namespace BookShop.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BookUser3", b =>
+                {
+                    b.HasOne("Models.Entities.Book", null)
+                        .WithMany()
+                        .HasForeignKey("CoAuthoredBooksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CoAuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Models.Entities.AdminAuthorizationInfo", b =>
                 {
                     b.HasOne("Models.Entities.Administrator", "User")
@@ -668,6 +740,33 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Models.Entities.BookChangeLog", b =>
+                {
+                    b.HasOne("Models.Entities.Book", "Book")
+                        .WithMany("ChangeLogs")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Entities.User", "CreatedBy")
+                        .WithMany("BookChangeLogs")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Models.Entities.EBook", "EBook")
+                        .WithOne("ChangeLog")
+                        .HasForeignKey("Models.Entities.BookChangeLog", "EBookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("EBook");
                 });
 
             modelBuilder.Entity("Models.Entities.BookImage", b =>
@@ -741,8 +840,8 @@ namespace BookShop.Migrations
             modelBuilder.Entity("Models.Entities.EBook", b =>
                 {
                     b.HasOne("Models.Entities.Book", "Book")
-                        .WithOne("EBook")
-                        .HasForeignKey("Models.Entities.EBook", "BookId")
+                        .WithMany("EBooks")
+                        .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -836,12 +935,13 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("Models.Entities.Book", b =>
                 {
+                    b.Navigation("ChangeLogs");
+
                     b.Navigation("Comments");
 
                     b.Navigation("Cover");
 
-                    b.Navigation("EBook")
-                        .IsRequired();
+                    b.Navigation("EBooks");
 
                     b.Navigation("Status");
                 });
@@ -853,10 +953,18 @@ namespace BookShop.Migrations
                     b.Navigation("Status");
                 });
 
+            modelBuilder.Entity("Models.Entities.EBook", b =>
+                {
+                    b.Navigation("ChangeLog")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Models.Entities.User", b =>
                 {
                     b.Navigation("AuthorizationInfo")
                         .IsRequired();
+
+                    b.Navigation("BookChangeLogs");
 
                     b.Navigation("BooksToSell");
 

@@ -11,7 +11,60 @@ namespace Api.Controllers;
 [Route("/api")]
 public class BookController(IBookService _bookService) : Controller
 {
+    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Policy = "IsNotBlocked")]
+    [HttpPut("add/book/{bookId}/co-author/{coAuthorId}")]
+    public async Task<IActionResult> AddCoAuthorAsync([FromRoute] Guid bookId, [FromRoute] Guid coAuthorId)
+    {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await _bookService.AddCoAuthorAsync(bookId, coAuthorId, userId);
+        return Ok();
+    }
 
+    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Policy = "IsNotBlocked")]
+    [HttpPut("remove/book/{bookId}/co-author/{coAuthorId}")]
+    public async Task<IActionResult> RemoveCoAuthorAsync([FromRoute] Guid bookId, [FromRoute] Guid coAuthorId)
+    {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await _bookService.RemoveCoAuthorAsync(bookId, coAuthorId, userId);
+        return Ok();
+    }
+
+    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Policy = "IsNotBlocked")]
+    [HttpPost("add/book/{bookId}/log")]
+    public async Task<IActionResult> AddBookChangeLogAsync([FromRoute] Guid bookId, [FromForm] BookChangeLogDto changeLog)
+    {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await _bookService.AddBookChangeLogAsync(bookId, changeLog, userId);
+        return Ok();
+    }
+
+    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Policy = "IsNotBlocked")]
+    [HttpGet("book/{bookId}/logs")]
+    public async Task<IActionResult> GetBookChangeLogsAsync([FromRoute] Guid bookId)
+    {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        var logs = await _bookService.GetBookChangeLogsAsync(userId, bookId);
+        return Ok(logs);
+    }
+
+    [Authorize(Roles = "IsExistedUser")]
+    [Authorize(Policy = "IsNotBlocked")]
+    [HttpPut("add/book/{bookId}/release/{changeLogId}")]
+    public async Task<IActionResult> AddEBookFromChangeLogAsync([FromRoute] Guid bookId, [FromRoute] Guid changeLogId)
+    {
+        var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)
+            ?? throw new BadHttpRequestException("Bad jwt token")).Value);
+        await _bookService.AddEBookFromChangeLogAsync(bookId, changeLogId, userId);
+        return Ok();
+    }
     [HttpGet("book/{id}")]
     public async Task<ActionResult<BookInfoDto>> GetById([FromRoute] Guid id)
     {
@@ -33,8 +86,8 @@ public class BookController(IBookService _bookService) : Controller
 
     [Authorize(Roles = "IsExistedUser")]
     [Authorize(Policy = "IsNotBlocked")]
-    [HttpPut("add/like")]
-    public async Task<IActionResult> AddLike([FromForm] Guid bookId)
+    [HttpPut("add/like/book/{bookId}")]
+    public async Task<IActionResult> AddLike([FromRoute] Guid bookId)
     {
         var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
             ?? throw new BadHttpRequestException("Bad jwt token")).Value);
@@ -43,8 +96,8 @@ public class BookController(IBookService _bookService) : Controller
     }
 
     [Authorize(Roles = "IsExistedUser,IsBlockedUser")]
-    [HttpPut("update")]
-    public async Task<IActionResult> Update([FromForm] Guid bookId, [FromForm] UpdateBookDto bookDto)
+    [HttpPut("update/book/{bookId}")]
+    public async Task<IActionResult> Update([FromRoute] Guid bookId, [FromForm] UpdateBookDto bookDto)
     {
         var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
             ?? throw new BadHttpRequestException("Bad jwt token")).Value);
@@ -71,8 +124,8 @@ public class BookController(IBookService _bookService) : Controller
 
     [Authorize(Roles = "IsExistedUser")]
     [Authorize(Policy = "IsNotBlocked")]
-    [HttpPost("buy")]
-    public async Task<ActionResult<string>> Buy(Guid bookId)
+    [HttpPost("buy/{bookId}")]
+    public async Task<ActionResult<string>> Buy([FromRoute] Guid bookId)
     {
         var userId = Guid.Parse((User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier) 
             ?? throw new BadHttpRequestException("Bad jwt token")).Value);

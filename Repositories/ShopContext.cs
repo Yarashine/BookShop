@@ -22,6 +22,7 @@ public partial class ShopContext(DbContextOptions<ShopContext> options) : DbCont
     public DbSet<AdminAuthorizationInfo> AdminAuthorizations { get; set; }
     public DbSet<UserAuthorizationInfo> UserAuthorizations { get; set; }
     public DbSet<UnbanRequest> UnbanRequests { get; set; }
+    public DbSet<BookChangeLog> BookChangeLogs { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresEnum<StateType>();
@@ -93,10 +94,33 @@ public partial class ShopContext(DbContextOptions<ShopContext> options) : DbCont
         modelBuilder.Entity<Book>()
             .HasMany(b => b.Genres)
             .WithMany(g => g.Books);
+
         modelBuilder.Entity<Book>()
-            .HasOne(b => b.EBook)
+            .HasMany(b => b.EBooks)
             .WithOne(e => e.Book)
-            .HasForeignKey<EBook>(e => e.BookId)
+            .HasForeignKey(e => e.BookId);
+
+        modelBuilder.Entity<Book>()
+            .HasMany(b => b.CoAuthors)
+            .WithMany(u => u.CoAuthoredBooks)
+            .UsingEntity(j => j.ToTable("BookCoAuthors"));
+
+        modelBuilder.Entity<Book>()
+            .HasMany(b => b.ChangeLogs)
+            .WithOne(cl => cl.Book)
+            .HasForeignKey(cl => cl.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<BookChangeLog>()
+            .HasOne(cl => cl.CreatedBy)
+            .WithMany(u => u.BookChangeLogs)
+            .HasForeignKey(cl => cl.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);  
+
+        modelBuilder.Entity<BookChangeLog>()
+            .HasOne(cl => cl.EBook)
+            .WithOne(eb => eb.ChangeLog)
+            .HasForeignKey<BookChangeLog>(cl => cl.EBookId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Book>()

@@ -12,6 +12,8 @@ public class EfUnitOfWork : IUnitOfWork
     private readonly Lazy<ICommentRepository> commentRepository;
     private readonly Lazy<IRepository<UnbanRequest>> unbanRequestRepository;
     private readonly Lazy<IRepository<Administrator>> administratorRepository;
+    private readonly Lazy<IRepository<EBook>> eBookRepository;
+    private readonly Lazy<IRepository<BookChangeLog>> bookChangeLogRepository;
     private readonly Lazy<IStringRepository<Genre>> genreRepository;
     private readonly Lazy<IStringRepository<Tag>> tagRepository;
     private readonly Lazy<IUserAuthorizationRepository> userAuthorizationRepository;
@@ -25,6 +27,8 @@ public class EfUnitOfWork : IUnitOfWork
         unbanRequestRepository = new Lazy<IRepository<UnbanRequest>>(() => new EfRepository<UnbanRequest>(context));
         commentRepository = new Lazy<ICommentRepository>(() => new CommentRepository(context));
         administratorRepository = new Lazy<IRepository<Administrator>>(() => new EfRepository<Administrator>(context));
+        eBookRepository = new Lazy<IRepository<EBook>>(() => new EfRepository<EBook>(context));
+        bookChangeLogRepository = new Lazy<IRepository<BookChangeLog>>(() => new EfRepository<BookChangeLog>(context));
         genreRepository = new Lazy<IStringRepository<Genre>>(() => new StringRepository<Genre>(context));
         tagRepository = new Lazy<IStringRepository<Tag>>(() => new StringRepository<Tag>(context));
         userAuthorizationRepository = new Lazy<IUserAuthorizationRepository>(() => new UserAuthorizationRepository(context));
@@ -36,6 +40,8 @@ public class EfUnitOfWork : IUnitOfWork
     public IRepository<UnbanRequest> UnbanRequestRepository => unbanRequestRepository.Value;
     public ICommentRepository CommentRepository => commentRepository.Value;
     public IRepository<Administrator> AdministratorRepository => administratorRepository.Value;
+    public IRepository<EBook> EBookRepository => eBookRepository.Value;
+    public IRepository<BookChangeLog> BookChangeLogRepository => bookChangeLogRepository.Value;
     public IStringRepository<Genre> GenreRepository => genreRepository.Value;
     public IStringRepository<Tag> TagRepository => tagRepository.Value;
     public IUserAuthorizationRepository UserAuthorizationRepository => userAuthorizationRepository.Value;

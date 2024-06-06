@@ -18,11 +18,13 @@ public class Book : Entity
     public List<User> AddedInLibrary { get; set; } = [];
     public List<User> AddedInFavorites { get; set; } = [];
     public List<User> BoughtBooks { get; set; } = [];
-    public EBook EBook { get; set; } = null!;
+    public List<EBook> EBooks { get; set; } = [];
+    public Guid ReleaseEBook { get; set; }
     public BookImage? Cover { get; set; } = null;
     public List<Tag> Tags { get; set; } = [];
     public List<Genre> Genres { get; set; } = [];
     public List<Comment> Comments { get; set; } = [];
-
+    public List<User> CoAuthors { get; set; } = [];
+    public List<BookChangeLog> ChangeLogs { get; set; } = [];
 
 }

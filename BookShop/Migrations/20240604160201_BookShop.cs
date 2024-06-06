@@ -103,7 +103,8 @@ namespace BookShop.Migrations
                     DateOfPublication = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Price = table.Column<int>(type: "integer", nullable: true),
                     Likes = table.Column<int>(type: "integer", nullable: false),
-                    State = table.Column<int>(type: "integer", nullable: false)
+                    State = table.Column<int>(type: "integer", nullable: false),
+                    ReleaseEBook = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -187,6 +188,30 @@ namespace BookShop.Migrations
                     table.ForeignKey(
                         name: "FK_UserStatus_Users_UserId",
                         column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BookCoAuthors",
+                columns: table => new
+                {
+                    CoAuthoredBooksId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CoAuthorsId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookCoAuthors", x => new { x.CoAuthoredBooksId, x.CoAuthorsId });
+                    table.ForeignKey(
+                        name: "FK_BookCoAuthors_Books_CoAuthoredBooksId",
+                        column: x => x.CoAuthoredBooksId,
+                        principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookCoAuthors_Users_CoAuthorsId",
+                        column: x => x.CoAuthorsId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -401,7 +426,8 @@ namespace BookShop.Migrations
                     Bytes = table.Column<byte[]>(type: "bytea", nullable: false),
                     FileType = table.Column<string>(type: "text", nullable: false),
                     FileName = table.Column<string>(type: "text", nullable: false),
-                    BookId = table.Column<Guid>(type: "uuid", nullable: false)
+                    BookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChangeLogId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -496,11 +522,67 @@ namespace BookShop.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "BookChangeLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    BookId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AuthorName = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: false),
+                    EBookId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookChangeLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BookChangeLogs_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookChangeLogs_EBooks_EBookId",
+                        column: x => x.EBookId,
+                        principalTable: "EBooks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookChangeLogs_Users_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AdminAuthorizations_UserId",
                 table: "AdminAuthorizations",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookChangeLogs_BookId",
+                table: "BookChangeLogs",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookChangeLogs_CreatedById",
+                table: "BookChangeLogs",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookChangeLogs_EBookId",
+                table: "BookChangeLogs",
+                column: "EBookId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BookCoAuthors_CoAuthorsId",
+                table: "BookCoAuthors",
+                column: "CoAuthorsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookGenre_GenresName",
@@ -572,8 +654,7 @@ namespace BookShop.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_EBooks_BookId",
                 table: "EBooks",
-                column: "BookId",
-                unique: true);
+                column: "BookId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reactions_CommentId",
@@ -627,6 +708,12 @@ namespace BookShop.Migrations
                 name: "AdminAuthorizations");
 
             migrationBuilder.DropTable(
+                name: "BookChangeLogs");
+
+            migrationBuilder.DropTable(
+                name: "BookCoAuthors");
+
+            migrationBuilder.DropTable(
                 name: "BookGenre");
 
             migrationBuilder.DropTable(
@@ -651,9 +738,6 @@ namespace BookShop.Migrations
                 name: "CommentStatus");
 
             migrationBuilder.DropTable(
-                name: "EBooks");
-
-            migrationBuilder.DropTable(
                 name: "Reactions");
 
             migrationBuilder.DropTable(
@@ -664,6 +748,9 @@ namespace BookShop.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserImages");
+
+            migrationBuilder.DropTable(
+                name: "EBooks");
 
             migrationBuilder.DropTable(
                 name: "Genres");

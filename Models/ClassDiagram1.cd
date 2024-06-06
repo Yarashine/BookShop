@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Models.Entities.AdminAuthorizationInfo">
+    <Position X="17.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\AdminAuthorizationInfo.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.Administrator" Collapsed="true">
+    <Position X="16.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Administrator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Models.Entities.AuthorizationInfo">
+    <Position X="19.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EQCAAAAAQCAAAQAAQAAACAgAAAAAAAAAAAABAAAAAAA=</HashCode>
+      <FileName>Entities\AuthorizationInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Models.Entities.Book">
+    <Position X="24.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABiAAEAQAggEABiAIAAAAAIAAAAEACABAABCAAoAE=</HashCode>
+      <FileName>Entities\Book.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Author" />
+      <Property Name="Cover" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="AddedInFavorites" />
+      <Property Name="AddedInLibrary" />
+      <Property Name="BoughtBooks" />
+      <Property Name="ChangeLogs" />
+      <Property Name="Comments" />
+      <Property Name="EBooks" />
+      <Property Name="Status" />
+      <Property Name="Tags" />
+      <Property Name="Genres" />
+      <Property Name="CoAuthors" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.BookChangeLog">
+    <Position X="12.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACgAAACAgAABACAAAAAAAIAAAAAAAAAAEAAAAAAE=</HashCode>
+      <FileName>Entities\BookChangeLog.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="EBook" />
+      <Property Name="Book" />
+      <Property Name="CreatedBy" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.BookImage">
+    <Position X="16.25" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACgAAAAAAAABAAAAAAAAAAAAAAAAAAAAIAABAAAA=</HashCode>
+      <FileName>Entities\BookImage.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Book" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.BookStatus">
+    <Position X="21" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\BookStatus.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Book" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.Comment">
+    <Position X="18.25" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAEAAAgAABAiAAAAAAAAAAAAAACAhQAJAAAAAA=</HashCode>
+      <FileName>Entities\Comment.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Author" />
+      <Property Name="Book" />
+      <Property Name="Status" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Reactions" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.CommentStatus">
+    <Position X="25" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\CommentStatus.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Comment" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.EBook">
+    <Position X="14.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAKgBAAAAAAABAAAAAAAAAAAAAAAAAAAAIAABAAAA=</HashCode>
+      <FileName>Entities\EBook.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Book" />
+      <Property Name="ChangeLog" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.Entity">
+    <Position X="14.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAgAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Entity.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Models.Entities.Genre">
+    <Position X="11" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Genre.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Books" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.IfBlockedStatus">
+    <Position X="22.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAEAAAAAAAggAACQAAA=</HashCode>
+      <FileName>Entities\IfBlockedStatus.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Administrator" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.Reaction">
+    <Position X="27" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAEAAAAAAAAAAAAAAgAAAAAAAAgAABAAAAAAAA=</HashCode>
+      <FileName>Entities\Reaction.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Comment" />
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.StringEntity">
+    <Position X="12.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAQAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\StringEntity.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Books" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.Tag">
+    <Position X="14.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Tag.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Books" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.UnbanRequest">
+    <Position X="27" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAMAAAgAAEAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\UnbanRequest.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Status" />
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.User">
+    <Position X="20.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAgAAAACAABAASAAAIAACACAACALAAAKAA=</HashCode>
+      <FileName>Entities\User.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="AuthorizationInfo" />
+      <Property Name="UserImage" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="BookChangeLogs" />
+      <Property Name="BooksToSell" />
+      <Property Name="CoAuthoredBooks" />
+      <Property Name="Comments" />
+      <Property Name="Favorites" />
+      <Property Name="Library" />
+      <Property Name="PurchasedBooks" />
+      <Property Name="Reactions" />
+      <Property Name="Status" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Models.Entities.UserAuthorizationInfo">
+    <Position X="25.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\UserAuthorizationInfo.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.UserImage">
+    <Position X="16.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAIAABAAAA=</HashCode>
+      <FileName>Entities\UserImage.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Models.Entities.UserStatus">
+    <Position X="23" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\UserStatus.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="User" />
+    </ShowAsAssociation>
+  </Class>
+  <Enum Name="Models.Entities.BlockedType" Collapsed="true">
+    <Position X="26" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAEQAAAA=</HashCode>
+      <FileName>Entities\BlockedType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Models.Entities.StateType" Collapsed="true">
+    <Position X="26" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgBAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\StateType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

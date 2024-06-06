@@ -7,6 +7,11 @@ namespace Servises.Interfaces;
 
 public interface IBookService
 {
+    Task AddCoAuthorAsync(Guid bookId, Guid coAuthorId, Guid userId);
+    Task RemoveCoAuthorAsync(Guid bookId, Guid coAuthorId, Guid userId);
+    Task AddBookChangeLogAsync(Guid bookId, BookChangeLogDto changeLog, Guid userId);
+    Task<IReadOnlyList<BookChangeLogInfoDto>> GetBookChangeLogsAsync(Guid userId, Guid bookId);
+    Task AddEBookFromChangeLogAsync(Guid bookId, Guid changeLogId, Guid userId);
     Task<IReadOnlyList<SummaryBookDto>> GetBooksAsync(Guid? userId, FilterDto filter);
     Task WebHook(string json, HttpRequest request);
     Task AddLikeToBookAsync(Guid userId, Guid bookId);

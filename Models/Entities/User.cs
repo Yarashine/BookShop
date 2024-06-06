@@ -15,4 +15,7 @@ public class User : Entity
     public List<Reaction> Reactions { get; set; } = [];
     public int CommentaryViolations { get; set; } = 0;
     public UserAuthorizationInfo AuthorizationInfo { get; set; } = null!;
+    public List<Book> CoAuthoredBooks { get; set; } = [];
+    public List<BookChangeLog> BookChangeLogs { get; set; } = [];
+
 }

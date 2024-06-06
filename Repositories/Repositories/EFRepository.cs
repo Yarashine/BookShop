@@ -14,7 +14,10 @@ public class EfRepository<T>(ShopContext _context) : IRepository<T> where T : En
     {
         await entities.AddAsync(entity, cancellationToken);
     }
-
+    public async Task DetacheAsync(T entity)
+    {
+        context.Entry(entity).State = EntityState.Detached;
+    }
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         T? entity = await FirstOrDefaultAsync(e => e.Id==id, cancellationToken);

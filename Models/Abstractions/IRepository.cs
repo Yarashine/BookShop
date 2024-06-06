@@ -4,6 +4,7 @@ namespace Models.Abstractions;
 
 public interface IRepository<T> 
 {
+    Task DetacheAsync(T entity);
     Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default,
     params Expression<Func<T, object>>[]? includesProperties);
     Task<IReadOnlyList<T>> ListAllAsync(CancellationToken cancellationToken = default);
