@@ -1,6 +1,10 @@
+API for Book Marketplace  
+This API is developed in C# using ASP.NET Core and includes all the features needed for selling e-books. It supports user authorization with JWT tokens, email verification using MailKit, CRUD operations for all entities (Entity Framework, PostgreSQL), payment integration with Stripe, multiple user roles, a system to block users, comments, and a rating system for users.  
 
-пользователь:
-     GET /api/users                                      получить всех пользователей
+список реализованных запросов:
+<pre>
+пользователь:  
+     GET /api/users                                     получить всех пользователей
      GET /api/user/{id}                                 получить пользователя по идентификатору
      GET /api/user/favorites/{id}                       получить избранное пользователя по идентификатору
      GET /api/user/library/{id}                         получить библиотеку пользователя по идентификатору
@@ -34,3 +38,4 @@
      PUT /api/admin/update                              обновление администратора
      PUT /api/admin/block/{id}/user/{id}                разблокировать пользователя по идентификатору
      DELETE /api/admin/user/{id}                        удалить пользователя по идентификатору
+</pre>
